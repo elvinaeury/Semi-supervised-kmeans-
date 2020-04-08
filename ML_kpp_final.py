@@ -195,7 +195,15 @@ def lloyd(k,X,e,centers):
     
     return [centers,clusters]
    
-
+def kmean_sklearn(k,X):
+    k_means = KMeans(n_clusters=k)
+    k_means.fit(X)
+    
+    centers = k_means.cluster_centers_
+    labels=k_means.fit_predict(X)
+    
+    return [centers,labels]
+    
 
 def plot_data_all(k,X,e):
     
@@ -208,10 +216,13 @@ def plot_data_all(k,X,e):
     clusters_kpp=lloyd(k,X,e,init_kpp)[1]
     clusters_random=lloyd(k,X,e,init_random)[1]
     clusters_kpp_notrials=lloyd(k,X,e,init_kpp_notrials)[1]
+    clusters_sklearn=kmean_sklearn(k,X)[1]
+    
 
     centers_kpp=lloyd(k,X,e,init_kpp)[0]
     centers_random=lloyd(k,X,e,init_random)[0]
     centers_kpp_notrials=lloyd(k,X,e,init_kpp_notrials)[0]
+    centers_sklearn=kmean_sklearn(k,X)[0]
     
     
     # plotting 
@@ -220,15 +231,20 @@ def plot_data_all(k,X,e):
     ax[0,0].scatter(X.iloc[:,0],X.iloc[:,1],c=clusters_kpp,s=7,cmap='viridis')
     ax[1,0].scatter(X.iloc[:,0],X.iloc[:,1],c=clusters_random,s=7,cmap='viridis')
     ax[0,1].scatter(X.iloc[:,0],X.iloc[:,1],c=clusters_kpp_notrials,s=7,cmap='viridis')
+    ax[1,1].scatter(X.iloc[:,0],X.iloc[:,1],c=clusters_sklearn,s=7,cmap='viridis')
+
+    
     
     ax[0,0].scatter(centers_kpp[:,0], centers_kpp[:,1], s=20, c='red', marker="o")
-    ax[1,0].scatter(centers_random[:,0], centers_random[:,1], s=45, c='red', marker="X")
-    ax[0,1].scatter(centers_kpp_notrials[:,0], centers_kpp_notrials[:,1], s=50, c='red', marker="*")
+    ax[1,0].scatter(centers_random[:,0], centers_random[:,1], s=55, c='red', marker="X")
+    ax[0,1].scatter(centers_kpp_notrials[:,0], centers_kpp_notrials[:,1], s=55, c='red', marker="*")
+    ax[1,1].scatter(centers_sklearn[:,0], centers_sklearn[:,1], s=55, c='orange', marker="o")
     
     # Sous-titre
     ax[0,0].set_xlabel('K means ++ AVEC essaie', labelpad = 5)
     ax[1,0].set_xlabel('Initialisation aléatoire', labelpad = 5)
     ax[0,1].set_xlabel('K means ++ SANS essaie', labelpad = 5)
+    ax[1,1].set_xlabel('Sklearn', labelpad = 5)
     
     plt.show()
     
@@ -245,6 +261,8 @@ def plot_each(k,X,e,centers):
     # On affiche les centres
     plt.scatter(centers[:,0], centers[:,1], marker='*', c='black', s=50)
     
+
+
 
 
 
@@ -325,17 +343,21 @@ if __name__=="__main__":
 #    centers_kpp_notrials_label=lloyd(k,X,e,centers_initial_kpp_notrials)[1]
 #    print('En utilisant kmeans ++ sans essaie %f' %(t3-t0))     #   6.0813
     
+# En utilisant lsklearn 
+    centers_sklearn=kmean_sklearn(k,X)[0]
+    
 
 # =============================================================================
 # Visualisation: Nuage de points
 # =============================================================================
     # Afficher tous les plots
-    graph_all=plot_data_all(k,X,e)
+    #graph_all=plot_data_all(k,X,e)
     
     # Afficher chaque plot séparemment
-#    graph_kpp=plot_each(k,X,e,centers_initial_kpp)
-#    graph_random=plot_each(k,X,e,centers_initial_random)
-#    graph_kpp_notrials=plot_each(k,X,e,centers_initial_kpp_notrials)
+#    graph_kpp=plot_each(k,X,e,centers_kpp)
+#    graph_random=plot_each(k,X,e,centers_random)
+#    graph_kpp_notrials=plot_each(k,X,e,centers_kpp_notrials)
+    graph_sklearn=plot_each(k,X,e,centers_sklearn)
     
     
         

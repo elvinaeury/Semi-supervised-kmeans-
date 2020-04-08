@@ -306,9 +306,9 @@ if __name__=="__main__":
     graph_all=plot_data_all(k,X,e)
     
     # Afficher chaque plot séparemment
-#    graph_kpp=plot_each(k,X,e,centers_initial_kpp)
-#    graph_random=plot_each(k,X,e,centers_initial_random)
-#    graph_kpp_notrials=plot_each(k,X,e,centers_initial_kpp_notrials)
+#    graph_kpp=plot_each(k,X,e,centers_kpp)
+#    graph_random=plot_each(k,X,e,centers_random)
+#    graph_kpp_notrials=plot_each(k,X,e,centers_kpp_notrials)
     
     
         

@@ -8,7 +8,11 @@ This project consists of the following parts:
 - creating semi supervised kmeans ++:
   - using pseudo labelling to classify the data between labelled and unlabelled
   
-- mathematical proofs of said algorithms.
+- elbow method algorithm for choice of k clusters
+  
+- mathematical proofs of said algorithms
+
+- comparing runtime of each algorithms and determining which one gives the best result
  
  
 Datasets:

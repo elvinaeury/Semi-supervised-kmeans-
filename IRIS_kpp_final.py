@@ -163,7 +163,8 @@ def lloyd(k,X,e,centers):
     
     
     error=10 # On initialise l'erreur: nombre aléatoire > 0
-    
+    sse=0
+    SSE=[]
     # Assignation des centres
     while error>e:
         distances=np.empty((sample,k))
@@ -171,9 +172,10 @@ def lloyd(k,X,e,centers):
 
         for i in range(k):
             distances[:,i]=distance_squared(np.atleast_2d(centers[i]),X)
-            #Verification de la premiere distance: print(np.sum((centers[1]-X.iloc[1,:])**2))
-            #print(distances)
-            
+            #Verification de la premiere distance: 
+#        print(np.sum((centers[0]-X.iloc[0,:])**2))
+#        print(distances)
+#            
         # Les clusters sont formés à partir des candidats ayant les distances minimales
         clusters=np.argmin(distances,axis=1)
 
@@ -184,8 +186,11 @@ def lloyd(k,X,e,centers):
         error=np.linalg.norm(centers-new_centers)
         #print(error)
         centers=deepcopy(new_centers)
+        sse+=distance_squared(np.atleast_2d(centers),X)
+        SSE.append(sse)
+        print(SSE.pop())
     
-    return [centers,clusters]
+    return [centers,clusters,SSE]
    
 
 
@@ -209,13 +214,13 @@ def plot_data_all(k,X,e):
     # plotting 
     fig, ax = plt.subplots(2, 2,figsize=(5, 5))
     
-    ax[0,0].scatter(X.iloc[:,0],X.iloc[:,1],c=clusters_kpp,s=7,cmap='viridis')
-    ax[1,0].scatter(X.iloc[:,0],X.iloc[:,1],c=clusters_random,s=7,cmap='viridis')
-    ax[0,1].scatter(X.iloc[:,0],X.iloc[:,1],c=clusters_kpp_notrials,s=7,cmap='viridis')
+    ax[0,0].scatter(X.iloc[:,1],X.iloc[:,3],c=clusters_kpp,s=7,cmap='viridis')
+    ax[1,0].scatter(X.iloc[:,1],X.iloc[:,3],c=clusters_random,s=7,cmap='viridis')
+    ax[0,1].scatter(X.iloc[:,1],X.iloc[:,3],c=clusters_kpp_notrials,s=7,cmap='viridis')
     
-    ax[0,0].scatter(centers_kpp[:,0], centers_kpp[:,1], s=30, c='black', marker="s")
-    ax[1,0].scatter(centers_random[:,0], centers_random[:,1], s=45, c='black', marker="X")
-    ax[0,1].scatter(centers_kpp_notrials[:,0], centers_kpp_notrials[:,1], s=50, c='black', marker="*")
+    ax[0,0].scatter(centers_kpp[:,1], centers_kpp[:,3], s=30, c='black', marker="s")
+    ax[1,0].scatter(centers_random[:,1], centers_random[:,3], s=45, c='black', marker="X")
+    ax[0,1].scatter(centers_kpp_notrials[:,1], centers_kpp_notrials[:,3], s=50, c='black', marker="*")
     
     # Sous-titre
     ax[0,0].set_xlabel('K means ++ AVEC essaie', labelpad = 5)
@@ -232,10 +237,10 @@ def plot_each(k,X,e,centers):
     clusters=lloyd(k,X,e,centers)[1]
     
     # On affiche les observations, et les couleurs sont basées sur les clusters
-    plt.scatter(X.iloc[:,0],X.iloc[:,1],c=clusters,s=7,cmap='viridis')
+    plt.scatter(X.iloc[:,1],X.iloc[:,3],c=clusters,s=7,cmap='viridis')
         
     # On affiche les centres
-    plt.scatter(centers[:,0], centers[:,1], marker='*', c='black', s=50)
+    plt.scatter(centers[:,1], centers[:,3], marker='*', c='black', s=50)
     
         
 
@@ -276,23 +281,24 @@ if __name__=="__main__":
     
     
 # En utilisant l'initialisation kpp, AVEC les essaies
-#    centers_initial_kpp=kpp_init(k,X)
-#    centers_kpp=lloyd(k,X,e,centers_initial_kpp)
-#    t1=time()
-#    centers_kpp_label=lloyd(k,X,e,centers_initial_kpp)[1]
-#    print('En utilisant kmeans ++ avec essaie %f' %(t1-t0))    #   0.019
+    centers_initial_kpp=kpp_init(k,X)
+    centers_kpp=lloyd(k,X,e,centers_initial_kpp)[0]
+    t1=time()
+    centers_kpp_label=lloyd(k,X,e,centers_initial_kpp)[1]
+    Kmeans_inertia=lloyd(k,X,e,centers_initial_kpp)[2]
+    print('En utilisant kmeans ++ avec essaie %f' %(t1-t0))    #   0.019
 
 
 # En utilisant l'initialisation aléatoire
-    centers_initial_random=random_init(k,X)
-    centers_random=lloyd(k,X,e,centers_initial_random)
-    t2=time()
-    centers_random_label=lloyd(k,X,e,centers_initial_random)[1]
-    print('En utilisant kmeans (random) %f' %(t2-t0))          #   0.011327
+#    centers_initial_random=random_init(k,X)
+#    centers_random=lloyd(k,X,e,centers_initial_random)[0]
+#    t2=time()
+#    centers_random_label=lloyd(k,X,e,centers_initial_random)[1]
+#    print('En utilisant kmeans (random) %f' %(t2-t0))          #   0.011327
 
 
 # En utilisant l'initialisation kpp, SANS les essaies
-#    centers_initial_kpp_notrials=kpp_init_notrials(k,X)
+#    centers_initial_kpp_notrials=kpp_init_notrials(k,X)[0]
 #    centers_kpp_notrials=lloyd(k,X,e,centers_initial_kpp_notrials)
 #    t3=time()
 #    centers_kpp_notrials_label=lloyd(k,X,e,centers_initial_kpp_notrials)[1]
@@ -303,12 +309,12 @@ if __name__=="__main__":
 # Visualisation: Nuage de points
 # =============================================================================
     # Afficher tous les plots
-    graph_all=plot_data_all(k,X,e)
+    #graph_all=plot_data_all(k,X,e)
     
     # Afficher chaque plot séparemment
-#    graph_kpp=plot_each(k,X,e,centers_kpp)
-#    graph_random=plot_each(k,X,e,centers_random)
-#    graph_kpp_notrials=plot_each(k,X,e,centers_kpp_notrials)
+#    graph_kpp=plot_each(k,X,e,centers_initial_kpp)
+#    graph_random=plot_each(k,X,e,centers_initial_random)
+#    graph_kpp_notrials=plot_each(k,X,e,centers_initial_kpp_notrials)
     
     
         

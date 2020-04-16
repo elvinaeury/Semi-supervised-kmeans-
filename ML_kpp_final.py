@@ -77,16 +77,20 @@ def kpp_init(k,X):
         best_total_dist=None
         best_dist=None
         
-        for essaie in range(number_trials):
+        dist=np.minimum(dist_candidate[0],dist)
+        """ MANQUE ACTUALISATION """
+        
+        
+        for essaie in range(1,number_trials):
             new_dist=np.minimum(dist_candidate[essaie],dist)
             new_total_dist=np.sum(new_dist)
             
         # On garde la plus petite distance et le candidat qui y correspond
-        if (best_candidate is None) or (new_total_dist<best_total_dist):
-            best_candidate=candidate_ids[essaie]
-            best_total_dist=new_total_dist
-            best_dist=new_dist
-            
+            if (best_candidate is None) or (new_total_dist<best_total_dist):
+                best_candidate=candidate_ids[essaie]
+                best_total_dist=new_total_dist
+                best_dist=new_dist
+                
         # On stock les centres et les distances minimum
         centers[c]=X.iloc[best_candidate]
         
@@ -126,20 +130,12 @@ def kpp_init_notrials(k,X):
         new_dist=np.minimum(dist_candidate,dist)
         new_total_dist=np.sum(new_dist)
         
-        # On garde la distance minimale
-        best_candidate=None
-        best_total_dist=None
-        best_dist=None
-        if (best_candidate is None) or (new_total_dist<best_total_dist):
-            best_candidate=candidate_id
-            best_total_dist=new_total_dist
-            best_dist=new_dist
-            
-        # On stock les centres et les distances minimum
-        centers[c]=X.iloc[best_candidate]
         
-        dist_total=best_total_dist
-        dist=best_dist
+        # On stock les centres et les distances minimum
+        centers[c]=X.iloc[candidate_id]
+        
+        dist_total=new_total_dist
+        dist=new_dist
     return centers
             
 
@@ -149,14 +145,13 @@ def random_init(k,X):
     sample,features=X.shape[0],X.shape[1]
     
     centers=np.empty((k,features))
-    
+    """ ENREGISTRER LES RANDS POUR PAS REPETER LES CENTRES """
     for i in range(k):
-        rand=npr.randint(0,sample-1)
+        rand=npr.randint(0,sample)
         centers[i]=X.iloc[rand]
     
     return centers
         
-
 
 
 def lloyd(k,X,e,centers):          
@@ -167,20 +162,25 @@ def lloyd(k,X,e,centers):
     e: by default 10**(-10)
     initial_centers: determined by one of the initialisation algorithms
     """
-    sample,features=X.shape[0],X.shape[1]
+    sample,features=X.shape
     
     
-    error=5 # On initialise l'erreur: nombre aléatoire > 0
-    
+    error=e+1 # On initialise l'erreur: nombre aléatoire > 0
+    SSE=[]
+    sse=0
+    sum_distance=0
     # Assignation des centres
     while error>e:
         distances=np.empty((sample,k))
+        #sse=np.empty((sample,k))
         clusters=np.empty(features)
 
         for i in range(k):
             distances[:,i]=distance_squared(np.atleast_2d(centers[i]),X)
-            #Verification de la premiere distance: print(np.sum((centers[1]-X.iloc[1,:])**2))
-            #print(distances)
+
+        #Verification de la premiere distance: 
+#        print('verification:',np.sum((centers[0]-X.iloc[0,:])**2))
+#        print(distances)
             
         # Les clusters sont formés à partir des candidats ayant les distances minimales
         clusters=np.argmin(distances,axis=1)
@@ -189,11 +189,18 @@ def lloyd(k,X,e,centers):
         new_centers=deepcopy(centers)
         for i in range(k):
             new_centers[i,:]=np.mean(X.iloc[clusters==i],axis=0)
+
         error=np.linalg.norm(centers-new_centers)
-        #print(error)
+        
         centers=deepcopy(new_centers)
-    
-    return [centers,clusters]
+        
+        """ prendre les points DANS le cluster """
+        #sse=distance_squared(np.atleast_2d(centers),X)
+
+        for i in range(k):
+            sum_distance+=np.sum(sse)
+
+    return [centers,clusters,sum_distance]
    
 def kmean_sklearn(k,X):
     k_means = KMeans(n_clusters=k)
@@ -201,8 +208,9 @@ def kmean_sklearn(k,X):
     
     centers = k_means.cluster_centers_
     labels=k_means.fit_predict(X)
+    inertia=k_means.inertia_
     
-    return [centers,labels]
+    return [centers,labels,inertia]
     
 
 def plot_data_all(k,X,e):
@@ -228,17 +236,15 @@ def plot_data_all(k,X,e):
     # plotting 
     fig, ax = plt.subplots(2, 2,figsize=(5, 5))
     
-    ax[0,0].scatter(X.iloc[:,0],X.iloc[:,1],c=clusters_kpp,s=7,cmap='viridis')
-    ax[1,0].scatter(X.iloc[:,0],X.iloc[:,1],c=clusters_random,s=7,cmap='viridis')
-    ax[0,1].scatter(X.iloc[:,0],X.iloc[:,1],c=clusters_kpp_notrials,s=7,cmap='viridis')
-    ax[1,1].scatter(X.iloc[:,0],X.iloc[:,1],c=clusters_sklearn,s=7,cmap='viridis')
+    ax[0,0].scatter(X.iloc[:,1],X.iloc[:,3],c=clusters_kpp,s=7,cmap='viridis')
+    ax[1,0].scatter(X.iloc[:,1],X.iloc[:,3],c=clusters_random,s=7,cmap='viridis')
+    ax[0,1].scatter(X.iloc[:,1],X.iloc[:,3],c=clusters_kpp_notrials,s=7,cmap='viridis')
+    ax[1,1].scatter(X.iloc[:,1],X.iloc[:,3],c=clusters_sklearn,s=7,cmap='viridis')
 
-    
-    
-    ax[0,0].scatter(centers_kpp[:,0], centers_kpp[:,1], s=20, c='red', marker="o")
-    ax[1,0].scatter(centers_random[:,0], centers_random[:,1], s=55, c='red', marker="X")
-    ax[0,1].scatter(centers_kpp_notrials[:,0], centers_kpp_notrials[:,1], s=55, c='red', marker="*")
-    ax[1,1].scatter(centers_sklearn[:,0], centers_sklearn[:,1], s=55, c='orange', marker="o")
+    ax[0,0].scatter(centers_kpp[:,1], centers_kpp[:,3], s=20, c='red', marker="o")
+    ax[1,0].scatter(centers_random[:,1], centers_random[:,3], s=55, c='red', marker="X")
+    ax[0,1].scatter(centers_kpp_notrials[:,1], centers_kpp_notrials[:,3], s=55, c='red', marker="*")
+    ax[1,1].scatter(centers_sklearn[:,1], centers_sklearn[:,3], s=55, c='orange', marker="o")
     
     # Sous-titre
     ax[0,0].set_xlabel('K means ++ AVEC essaie', labelpad = 5)
@@ -251,20 +257,50 @@ def plot_data_all(k,X,e):
     
     
     
-def plot_each(k,X,e,centers):
+#def plot_each(k,X,e,centers):
+#    
+#    clusters=lloyd(k,X,e,centers)[1]
+#    
+#    # On affiche les observations, et les couleurs sont basées sur les clusters
+#    plt.scatter(X.iloc[:,1],X.iloc[:,3],c=clusters,s=7,cmap='viridis')
+#        
+#    # On affiche les centres
+#    plt.scatter(centers[:,1], centers[:,3], marker='*', c='black', s=50)
+#    
+#
+#def plot_sklearn(k,X):
+#    clusters=kmean_sklearn(k,X)
+#    plt.scatter(X.iloc[:,1],X.iloc[:,3],c=clusters,s=7,cmap='viridis')
+#    plt.scatter(clusters[:,1], clusters[:,3], marker='*', c='black', s=50)
+#
+#    
+
+
+def elbow(X,e):
+    SSE=[]
+    k = np.arange(1,5)
+    for i in range(1,5):
+        centers=random_init(i,X)
+        kmeans_inertia=lloyd(i,X,e,centers)[2]
+        print(kmeans_inertia)
+        SSE.append(kmeans_inertia)
+    plt.plot(k, SSE, 'bx-')
+#    plt.xlabel('k')
+#    plt.ylabel('Somme_distance_carre')
+#    plt.title('Méthode du coude')
+    plt.show()
     
-    clusters=lloyd(k,X,e,centers)[1]
     
-    # On affiche les observations, et les couleurs sont basées sur les clusters
-    plt.scatter(X.iloc[:,0],X.iloc[:,1],c=clusters,s=7,cmap='viridis')
-        
-    # On affiche les centres
-    plt.scatter(centers[:,0], centers[:,1], marker='*', c='black', s=50)
+def elbow_sklearn(X):
+    SSE=[]
+    k=np.arange(1,5)
+    for i in range(1,5):
+        kmeans_inertia=kmean_sklearn(i,X)[2]
+        print(kmeans_inertia)
+        SSE.append(kmeans_inertia)
+    plt.plot(k, SSE, 'bx-')
+    plt.show()
     
-
-
-
-
 
 
 class DataFrameImputer(TransformerMixin):
@@ -287,6 +323,9 @@ class DataFrameImputer(TransformerMixin):
 
     def transform(self, X, y=None):
         return X.fillna(self.fill)
+
+
+
 
 
 
@@ -322,46 +361,49 @@ if __name__=="__main__":
     
 # En utilisant l'initialisation kpp, AVEC les essaies
     centers_initial_kpp=kpp_init(k,X)
-    centers_kpp=lloyd(k,X,e,centers_initial_kpp)
+    centers_kpp,centers_kpp_label,kmeans_inertia=lloyd(k,X,e,centers_initial_kpp)
     t1=time()
-    centers_kpp_label=lloyd(k,X,e,centers_initial_kpp)[1]
     print('En utilisant kmeans ++ avec essaie %f' %(t1-t0))    #   2.425
-
+#
 
 # En utilisant l'initialisation aléatoire
 #    centers_initial_random=random_init(k,X)
-#    centers_random=lloyd(k,X,e,centers_initial_random)
+#    centers_random=lloyd(k,X,e,centers_initial_random)[0]
 #    t2=time()
 #    centers_random_label=lloyd(k,X,e,centers_initial_random)[1]
+#    kmeans_inertia=lloyd(k,X,e,centers_initial_random)[2]
+##    print(kmeans_inertia)
 #    print('En utilisant kmeans (random) %f' %(t2-t0))          #   6.05789
 
 
 # En utilisant l'initialisation kpp, SANS les essaies
 #    centers_initial_kpp_notrials=kpp_init_notrials(k,X)
-#    centers_kpp_notrials=lloyd(k,X,e,centers_initial_kpp_notrials)
+#    centers_kpp_notrials=lloyd(k,X,e,centers_initial_kpp_notrials)[0]
 #    t3=time()
 #    centers_kpp_notrials_label=lloyd(k,X,e,centers_initial_kpp_notrials)[1]
 #    print('En utilisant kmeans ++ sans essaie %f' %(t3-t0))     #   6.0813
     
 # En utilisant lsklearn 
-    centers_sklearn=kmean_sklearn(k,X)[0]
+
+    #centers_sklearn=kmean_sklearn(k,X)[0]
     
 
 # =============================================================================
 # Visualisation: Nuage de points
 # =============================================================================
     # Afficher tous les plots
-    #graph_all=plot_data_all(k,X,e)
+    graph_all=plot_data_all(k,X,e)
     
     # Afficher chaque plot séparemment
-#    graph_kpp=plot_each(k,X,e,centers_kpp)
-#    graph_random=plot_each(k,X,e,centers_random)
-#    graph_kpp_notrials=plot_each(k,X,e,centers_kpp_notrials)
-    graph_sklearn=plot_each(k,X,e,centers_sklearn)
+#    graph_kpp=plot_each(k,X,e,centers_initial_kpp)
+#    graph_random=plot_each(k,X,e,centers_initial_random)
+#    graph_kpp_notrials=plot_each(k,X,e,centers_initial_kpp_notrials)
+#    graph_sklearn=plot_sklearn(k,X) 
     
     
         
-    
+    #elbow_manual=elbow(X,e)
+#    elbow_sk=elbow_sklearn(X)
     
 
     

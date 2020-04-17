@@ -148,18 +148,17 @@ class Initialize:
     def random_init(k,X):
         
         sample,features=X.shape
-        
+    
         centers=np.empty((k,features))
-        # Nous mettons les résultats dans un set afin d'éviter des doublons
-        s=set()
+       
+        rands_deja_obtenus = set()
         for i in range(k):
-            rand=npr.randint(0,sample)
-            s.add(rand)
-        # On choisit le premier élément du set
-        for i in range(len(s)):
-            first=list(s)[0]
-            s.remove(first)
-            centers[i]=X.iloc[first]
+            n = len(rands_deja_obtenus)
+            while len(rands_deja_obtenus) == n :
+                rand=npr.randint(0,sample)
+                rands_deja_obtenus.add(rand)
+            centers[i]=X.iloc[rand]
+        
         return centers
     
     

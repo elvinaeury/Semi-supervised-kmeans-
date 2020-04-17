@@ -142,11 +142,16 @@ def random_init(k,X):
     sample,features=X.shape[0],X.shape[1]
     
     centers=np.empty((k,features))
-    
+    # Nous mettons les résultats dans un set afin d'éviter des doublons
+    s=set()
     for i in range(k):
-        rand=npr.randint(0,sample-1)
-        centers[i]=X.iloc[rand]
-    
+        rand=npr.randint(0,sample)
+        s.add(rand)
+    # On choisit le premier élément du set
+    for i in range(len(s)):
+        first=list(s)[0]
+        s.remove(first)
+        centers[i]=X.iloc[first]
     return centers
         
 

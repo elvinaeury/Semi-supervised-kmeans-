@@ -6,13 +6,32 @@ Created on Fri Apr 17 11:40:19 2020
 @author: elvinagovendasamy
 """
 
+
+
+import pandas as pd
+import numpy as np
+import random
+import math
+import matplotlib.pyplot as plt
+from sklearn import datasets
+import numpy.random as npr
+from copy import deepcopy
+from sklearn.cluster import KMeans
+import seaborn as sns
+from scipy import spatial
+from time import time
+from sklearn.base import TransformerMixin
+
+
 # =============================================================================
 # Méthode du coude en utilisant deux méthodes
 # =============================================================================
 
+
+
 class Elbow:
 
-    def kmeans_manual(k,X,e,centers):          
+    def kmeans_manual(k,X,e):          
     
         """
         k: clusters
@@ -21,10 +40,22 @@ class Elbow:
         initial_centers: determined by one of the initialisation algorithms
         """
         sample,features=X.shape
-        
-        
-        error=e+1 # On initialise l'erreur: nombre aléatoire > 0
-        SSE=[]
+# =============================================================================
+# Initialisation random
+# =============================================================================
+        centers=np.empty((k,features))
+       
+        rands_deja_obtenus = set()
+        for i in range(k):
+            n = len(rands_deja_obtenus)
+            while len(rands_deja_obtenus) == n :
+                rand=npr.randint(0,sample)
+                rands_deja_obtenus.add(rand)
+            centers[i]=X.iloc[rand]
+# =============================================================================
+# Lloyd
+# =============================================================================           
+        error=e+1 
         sse=0
         sum_distance=0
         # Assignation des centres
@@ -34,31 +65,27 @@ class Elbow:
             clusters=np.empty(features)
     
             for i in range(k):
-                distances[:,i]=distance_squared(np.atleast_2d(centers[i]),X)
-    
-            #Verification de la premiere distance: 
-    #        print('verification:',np.sum((centers[0]-X.iloc[0,:])**2))
-    #        print(distances)
-                
-            # Les clusters sont formés à partir des candidats ayant les distances minimales
+                distances[:,i]=spatial.distance.cdist(np.atleast_2d(centers[i]),X,'sqeuclidean')
+
             clusters=np.argmin(distances,axis=1)
     
             # Mise a jour des centres
             new_centers=deepcopy(centers)
             for i in range(k):
                 new_centers[i,:]=np.mean(X.iloc[clusters==i],axis=0)
-                sse=spatial.distance.cdist(np.atleast_2d(new_centers),X.iloc[clusters==i],'euclidean')
-                #print(sse)
+                sse=spatial.distance.cdist(np.atleast_2d(new_centers),X.iloc[clusters==i],'sqeuclidean')
+                print(sse)
+                sum_distance=np.sum(sse,axis=1)
                 
-            sum_distance=np.sum(sse,axis=1)
             
-        #    SSE.append(sum_distance)
-        #    print(SSE)
             error=np.linalg.norm(centers-new_centers)
+            
+            print(sum_distance)
             
             centers=deepcopy(new_centers)
     
         return [centers,clusters,sum_distance]
+    
     
     def kmean_sklearn(k,X):
         k_means = KMeans(n_clusters=k)
@@ -67,23 +94,20 @@ class Elbow:
         centers = k_means.cluster_centers_
         labels=k_means.fit_predict(X)
         inertia=k_means.inertia_
+        print(inertia)
         
         return [centers,labels,inertia]
         
         
         
     def elbow_manual(X,e):
-        SSE=[]
         k = np.arange(1,5)
         for i in range(1,5):
-            centers=random_init(i,X)
-            kmeans_inertia=kmeans_manual(i,X,e,centers)[2]
-            print(kmeans_inertia)
-            SSE.append(kmeans_inertia)
-        plt.plot(k, SSE, 'bx-')
-    #    plt.xlabel('k')
-    #    plt.ylabel('Somme_distance_carre')
-    #    plt.title('Méthode du coude')
+            kmeans_inertia=Elbow.kmeans_manual(i,X,e)[2]
+        plt.plot(k, kmeans_inertia, 'bx-')
+        plt.xlabel('k')
+        plt.ylabel('Somme_distance_carre')
+        plt.title('Méthode du coude')
         plt.show()
         
         
@@ -91,8 +115,7 @@ class Elbow:
         SSE=[]
         k=np.arange(1,5)
         for i in range(1,5):
-            kmeans_inertia=kmean_sklearn(i,X)[2]
-            print(kmeans_inertia)
+            kmeans_inertia=Elbow.kmean_sklearn(i,X)[2]
             SSE.append(kmeans_inertia)
         plt.plot(k, SSE, 'bx-')
         plt.show()
@@ -108,13 +131,13 @@ if __name__=="__main__":
     data = pd.DataFrame(data= np.c_[iris['data'], iris['target']],columns= iris['feature_names'] + ['target'])
 
     X=data.iloc[:,0:4]
-    Y = data['target']
+#    Y = data['target']
+    
+    k,e=3,10**(-10)
     
     
-    # Nombre de clusters
-    k=3
-    # Terme d'erreur
-    e=10**(-10)
     
-    Elbow.elbow_manual(X,e)
+
+    
+#    Elbow.elbow_manual(X,e)
     Elbow.elbow_sklearn(X)

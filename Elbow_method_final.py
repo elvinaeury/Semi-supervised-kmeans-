@@ -140,7 +140,7 @@ def lloyd(k,X,e,centers):
         new_centers=deepcopy(centers)
         for i in range(k):
             new_centers[i,:]=np.mean(X.iloc[clusters==i],axis=0)
-            print(X.iloc[clusters==i])
+            
         error=np.linalg.norm(centers-new_centers)
         
         centers=deepcopy(new_centers)
@@ -151,32 +151,37 @@ def lloyd(k,X,e,centers):
 def elbow_manual(n_clusters,X):
     sample,features=X.shape
     e=10**(-10)
-    # ici on force l'initialisation aléatoire
-    initial_centers=kpp_init_notrials(n_clusters,X)
-#    initial_random=random_init(n_clusters,X)
+
     X = DataFrameImputer().fit_transform(X)
 #    X.fillna(X.mean())
     
     SSE=[]
     SSE1=[]
     for i in range(1,n_clusters):
+        initial_centers=kpp_init_notrials(i,X)
+#        initial_random=random_init(n_clusters,X)
         centers,labels=lloyd(i,X,e,initial_centers)
         centers_sk,labels_sk=kmean_sklearn(i,X)
     
+        # en utilisant lloyd
+        
         SSE.append(np.sum(np.min(cdist(X,centers,'euclidean'),axis=1)))
+        # en utilisant sklearn
         SSE1.append(np.sum(np.min(cdist(X,centers_sk,'euclidean'),axis=1)))
     
     K=np.arange(1,n_clusters)    
-    plt.plot(K,SSE)
-    plt.title('Méthode du coude')
+    plt.plot(K,SSE,label='méthode manuel',color='blue')
+    plt.plot(K,SSE1,label='méthode sklearn',color='orange')
+    plt.title('Comparaison Méthode du coude entre notre algorithme et sklearn')
     plt.show()
+    plt.legend()
     
-#    # On doit prendre au minimum 2 clusters
-#    K_=np.arange(2,n_clusters)
-#    kn = KneeLocator(K_, SSE, curve='convex', direction='decreasing')    
-#    print(kn.knee)
-#    # plotting dashed_vline on knee
-#    plt.vlines(kn.knee, plt.ylim()[0], plt.ylim()[1], linestyles='dashed')
+    # On doit prendre au minimum 2 clusters
+    K_=np.arange(2,n_clusters)
+    kn = KneeLocator(K_, SSE, curve='convex', direction='decreasing')    
+    print(kn.knee)
+    # plotting dashed_vline on knee
+    plt.vlines(kn.knee, plt.ylim()[0], plt.ylim()[1], linestyles='dashed')
 
 # =============================================================================
 # Sklearn elbow method

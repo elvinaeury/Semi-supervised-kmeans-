@@ -6,13 +6,6 @@ Created on Wed Apr  8 23:09:13 2020
 @author: elvinagovendasamy
 """
 
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Apr  7 16:18:44 2020
-
-@author: elvinagovendasamy
-"""
 
 import pandas as pd
 import numpy as np
@@ -148,16 +141,11 @@ class Initialize:
     def random_init(k,X):
         
         sample,features=X.shape
-    
         centers=np.empty((k,features))
-       
-        rands_deja_obtenus = set()
+
         for i in range(k):
-            n = len(rands_deja_obtenus)
-            while len(rands_deja_obtenus) == n :
-                rand=npr.randint(0,sample)
-                rands_deja_obtenus.add(rand)
-            centers[i]=X.iloc[rand]
+            # tirage sans remise
+            centers[i]=X.sample(n=1,replace=False)
         
         return centers
     
@@ -184,12 +172,10 @@ class Kmeans:
         # Assignation des centres
         while error>e:
             distances=np.empty((sample,k))
-            #sse=np.empty((sample,k))
             clusters=np.empty(features)
     
             for i in range(k):
                 distances[:,i]=Initialize.distance_squared(np.atleast_2d(centers[i]),X)
-    
             #Verification de la premiere distance: 
     #        print('verification:',np.sum((centers[0]-X.iloc[0,:])**2))
     #        print(distances)
@@ -209,7 +195,7 @@ class Kmeans:
         return [centers,clusters]
        
     def kmean_sklearn(k,X):
-        k_means = KMeans(n_clusters=k)
+        k_means = KMeans(n_clusters=k,init="k-means++")
         k_means.fit(X)
         
         centers = k_means.cluster_centers_
@@ -378,15 +364,15 @@ if __name__=="__main__":
     
     
     """Résultat, en choisir un des cas """
-    Display.main_kpp_essaie(k,X,e)
+#    Display.main_kpp_essaie(k,X,e)
+#    
+#    Display.main_random(k,X,e)
+#    
+#    Display.main_kpp_NOessaie(k,X,e)
+#    
+#    Display.main_sklearn(k,X)
     
-    Display.main_random(k,X,e)
-    
-    Display.main_kpp_NOessaie(k,X,e)
-    
-    Display.main_sklearn(k,X)
     
     
-    
-#    Display.plot_all(k,X,e)
+    Display.plot_all(k,X,e)
 

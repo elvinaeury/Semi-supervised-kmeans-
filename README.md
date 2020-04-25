@@ -5,8 +5,8 @@ In this project, we want to develop a semi supervised approach to kmeans++.
 This project consists of the following parts:
 - creating kmeans algorithm and comparing it with that of sklearn. Based on lloyd approach.
 - creating kmeans ++
-- creating semi supervised kmeans ++:
-  - using pseudo labelling to classify the data between labelled and unlabelled
+- creating semi supervised kmeans ++
+  
   
 - elbow method algorithm for choice of k clusters
   
@@ -17,8 +17,7 @@ This project consists of the following parts:
  
 Datasets:
 The algorithms are applied on :
-- Iris dataset (population 150)
-- A larger dataset on customer segmentation (population 60366)
+-  Dataset about customer segmentation (population 60366)
 
 
 

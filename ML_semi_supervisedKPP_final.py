@@ -87,34 +87,62 @@ class Initialize:
         
         # on crée des 'labels' pour une proportion donnée d'observations
         rng = np.random.RandomState(sample)
-        unlabeled=rng.rand(sample) < frac
+        unlabelled=rng.rand(sample) < frac
         labels=np.copy(np.zeros(len(clusters)))
-        labels[unlabeled]=-1
-        X['labeling']=labels # nouvelle colonne avec les 0 (labeled) et -1 (unlabeled)
+        labels[unlabelled]=-1
+        X['labelling']=labels # nouvelle colonne avec les 0 (labeled) et -1 (unlabeled)
         
         # base contenant uniquement les labeled data
         # cela évite de travailler sur la base X (qui contient plus de données, donc plus de temps de passer à travers tous le dataframe)
-        labeled_base=X[X['labeling']==0].iloc[:,]
+        labelled_base=X[X['labelling']==0].iloc[:,]
         
         # base contenant uniquement les unlabeled data
-        unlabeled_base=X[X['labeling']==-1]
+        unlabelled_base=X[X['labelling']==-1]
         # On enleve les deux colonnes labeling et clusters, pas utile pour la partie 'unlabeled'
-        unlabeled_base=unlabeled_base.drop(['labeling','clusters'],axis=1)
+        unlabelled_base=unlabelled_base.drop(['labelling','clusters'],axis=1)
         
-        """ Pour les LABELED data, on crée les centres pour chaque label"""
-        centers_labeled=np.empty((k,features))
+        
+        """ Pour les LABELLED data, on crée les centres pour chaque label"""
+        # on détermine les clusters identifiés dans les données labelled
+        unique_clusters=labelled_base['clusters'].unique().tolist()
+        
+        # Le nombre de colonnes est le nombre de features + 2 (pour accomoder les colonnes clusters et labels)
+        # le array centers_labelled a le meme nombre de lignes que le nombre de clusters fourni par les données labelled.
+        centers_labelled=np.empty((len(unique_clusters),features+2))
+        
         for i in range(k):
             # on crée une sous base contenant uniquement les labeled data correspondant aux clusters(1,..,k)
-            f=labeled_base.loc[labeled_base['clusters'] == i]
-            f=f.drop(['labeling','clusters'],axis=1)
+            centers_labelled[i]=labelled_base.loc[labelled_base['clusters'] == i].mean(axis=0)
             # on choisit aléatoirement un centre dans chaque sous-base (tirage sans remise)
-            centers_labeled[i]=f.sample(n=1,replace=False)
+#            centers_labeled[i]=f.sample(n=1,replace=False)
+            # le centre est obtenu en trouvant la moyenne de chaque colonne (moyenne vérifié)
+        centers_labelled=np.delete(centers_labelled,np.s_[39:41], axis=1)
+
+ 
+        """ Pour les UNLABELLED data, on crée les centres uniquement pour les clusters qui manquent"""
+        # on fait appel à la fonction de kmeans ++ sans essaies pour calculer les unlabelled.
+        centers_unlabelled=Initialize.kpp_init_notrials(k,unlabelled_base)
+
+        """ On combine les clusters des labelled et unlabelled data"""
+        """ On priorise les données labeled, ainsi si C va contenir les centres labeled en premier lieu, 
+        puis s'il manque des centres, alors on utilise les centres unlabeled"""
+    
+        # centers_all va contenir tous les centres, labelled et unlabelled
+        centers_all=np.empty((k,features))
         
-        """ Pour les UNLABELED data, on crée les centres pour chaque label"""
-        # on fait appel à la fonction de kmeans ++ sans essaies
-        centers_unlabeled=Initialize.kpp_init_notrials(k,unlabeled_base)
+        K=np.arange(0,k)
+        # la liste des clusters qui ne se trouvent PAS dans les labelled.
+        not_in_labelled = [i for i in K if i not in unique_clusters]
+#        not_in_labelled=[3,4] (test effectué avec une liste fictive < k)
+        print(not_in_labelled)
+        # On selectionne les centres manquants, des centres de données unlabelled 
+        # Il reste vide si aucun centres n'étaient manquants
+        selected_from_unlabelled=centers_unlabelled[not_in_labelled,:]
         
-        return centers_labeled,centers_unlabeled
+        centers_all=np.concatenate((centers_labelled,selected_from_unlabelled),axis=0)
+        
+        return selected_from_unlabelled,centers_all ,centers_labelled     
+
         
     
 # =============================================================================
@@ -160,6 +188,16 @@ class Kmeans:
             centers=deepcopy(new_centers)
     
         return [centers,clusters]
+    
+    
+    def kmean_sklearn(k,X):
+        k_means = KMeans(n_clusters=k,init="k-means++")
+        k_means.fit(X)
+        
+        centers = k_means.cluster_centers_
+        labels=k_means.fit_predict(X)
+        
+        return [centers,labels]
        
 
     
@@ -199,6 +237,59 @@ class Hierarchy:
         return hierarchy.dendrogram(hierarchy.linkage(X,method='ward'))
 
 
+class Graph:
+        def plot_each(k,X,clusters,centers):
+#        centers,clusters=Kmeans.lloyd(k,X,e,centers)
+        
+            # On affiche les observations, et les couleurs sont basées sur les clusters
+            plt.scatter(X.iloc[:,1],X.iloc[:,3],c=clusters,s=7,cmap='viridis')
+                
+            # On affiche les centres
+            plt.scatter(centers[:,1], centers[:,3], marker='*', c='red', s=50)
+            
+    
+        def plot_sklearn(k,X,clusters,centers):
+            
+            plt.scatter(X.iloc[:,1],X.iloc[:,3],c=clusters,s=7,cmap='viridis')
+            plt.scatter(centers[:,1], centers[:,3], marker='o', c='orange', s=50)
+        
+        
+class Display:        
+        def main_kpp_NOessaie(k,X,e):
+            """ En utilisant l'initialisation kpp, SANS les essaies """
+            
+            t0=time()
+            centers_initial_kpp_notrials=Initialize.kpp_init_notrials(k,X)
+            centers_kpp_notrials,centers_kpp_notrials_label=Kmeans.lloyd(k,X,e,centers_initial_kpp_notrials)
+            t3=time()
+            print('En utilisant kmeans ++ SANS essaie : %f' %(t3-t0))     #   6.0813
+            
+            return Graph.plot_each(k,X,centers_kpp_notrials_label,centers_kpp_notrials)
+        
+        
+        def main_semisupervised(k,X,e,fraction):
+            """ En utilisant l'initialisation kpp, SANS les essaies """
+            
+            
+            t0=time()
+            unlabel,cent_all,lab=Initialize.semi_supervised(k,X,fraction)
+            lloyd_centers,lloyd_labels=Kmeans.lloyd(k,X,e,cent_all)
+            t3=time()
+            print('En utilisant kmeans ++ semi supevisée : %f' %(t3-t0))     #   6.0813
+            
+            return Graph.plot_each(k,X,lloyd_labels,lloyd_centers)
+            
+        
+    
+        def main_sklearn(k,X):
+            """ En utilisant kmeans_sklearn """
+            t0=time()
+            centers_sklearn,clusters_sklearn=Kmeans.kmean_sklearn(k,X)
+            t4=time()
+            print('En utilisant kmeans sklearn : %f' %(t4-t0))
+                
+            return Graph.plot_sklearn(k,X,clusters_sklearn,centers_sklearn)
+        
 
 # =============================================================================
 # Main
@@ -221,4 +312,10 @@ if __name__=="__main__":
     # On choisi le pourcentage unlabeled
     fraction=0.4
     
-    semi_supervised_labeled,semi_supervised_unlabeled=Initialize.semi_supervised(k,X,fraction)
+#    Display.main_sklearn(k,X)
+    
+    Display.main_semisupervised(k,X,e,fraction)
+    
+
+
+    

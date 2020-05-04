@@ -61,7 +61,8 @@ def labeling(k,X,frac) :
     
     labels = kmean_sklearn(k,X)[1]
     nb_unlabeled_data = int(frac*len(labels))
-    index_unlabeled_data = np.random.randint(len(labels),size=nb_unlabeled_data)
+    #index_unlabeled_data = np.random.randint(len(labels),size=nb_unlabeled_data)
+    index_unlabeled_data = np.random.choice(np.arange(len(labels)),size=nb_unlabeled_data,replace=False)
     labels[index_unlabeled_data]=-1
     X["clusters"] = labels
     

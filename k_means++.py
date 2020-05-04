@@ -8,7 +8,7 @@ Created on Thu Apr 30 17:51:49 2020
 
 import numpy as np
 from others import distance_squared, DataFrameImputer, kmean_sklearn
-from lloyd_test import lloyd
+from lloyd import lloyd
 import numpy.random as npr
 import pandas as pd
 from time import time

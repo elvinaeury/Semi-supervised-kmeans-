@@ -14,6 +14,8 @@ import pandas as pd
 from time import time
 from scipy.spatial.distance import cdist
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 import warnings
 
@@ -126,26 +128,27 @@ if __name__=="__main__":
     
     
     #comparaison avec kmeans++ sklearn
-    t2=time()
-    resultat = kmean_sklearn(k,quanti_X)
-    t3=time()
-    print('En utilisant kmeans ++ de sklearn : %f' %(t3-t2)) #max : 5.153863, min : 4.261078, 4 essais
+#    t2=time()
+#    resultat = kmean_sklearn(k,quanti_X)
+#    t3=time()
+#    print('En utilisant kmeans ++ de sklearn : %f' %(t3-t2)) #max : 5.153863, min : 4.261078, 4 essais
     
     
     """ Graphique comparaison des clusters"""
     # Afficher la variable qualitative: shops_used
-    plt.figure()
+    
     sns.lmplot('min_distance_to_shops', 'products_purchased', data=X, hue='shops_used',fit_reg=False,scatter_kws={"s": 10})
     plt.show()
-    plt.title('Distribution de la variable qualitative: shops_used',labelpad = 5)
+    plt.title('Distribution de la variable qualitative: shops_used')
     
     
     # Afficher les clusters avec kmeans++
+    
     X['clusters']=clusters
     sns.lmplot('min_distance_to_shops', 'products_purchased', data=X, hue='clusters',fit_reg=False,scatter_kws={"s": 10})
     plt.show()
     plt.scatter(centers[:,1], centers[:,3], marker='*', c='red', s=50)
-    plt.xlabel('kmeans++ semi supervisée',labelpad = 5)
+    plt.xlabel('kmeans++ semi supervisée')
 
     
     

@@ -165,21 +165,12 @@ Cette partie est consacrée à la présentation et à l'étude théorique de dif
 
 \subsection{Les k-means standards}
 
-Les k-means standards est une méthode de classification non-supervisée utilisé lorsque les données ne sont pas étiquettées. Le but de cet algorithme est basée sur une approche itérative permettant de regrouper les observations à partir de leur similitudes. Proposée par Stuart Lloyd en 1957 à partir des idées de Hugo Steinhaus en 1956, cette méthode a été utilisée pour la première fois par James MacQueen en 1967.
-
-Le fonctionnement des k-means standards repose sur un choix aléatoire d'un nombre de centres, déterminés au préalable en utilisant divers techniques comme la méthode du coude, une méthode qui vu plus tard dans l'étude. À partir de là, l'algorithme va fonctionner de façon itérative sur les deux tâches suivantes:
-\begin{description}
-  \item 1. Assigner chaque observation au centre le plus proche, basé sur la mesure de distance Euclidéenne.
-  \item 2. Pour chaque centre, calculer la moyenne des distances de chaque observation appartenant à ce centre. Cette moyenne sera la nouvelle valeur du centre.
-
-\end{description}
-
-Une fois l'étape 2 accomplie, chaque centre a une nouvelle valeur qui correspond à la moyenne des observations correspondantes. Le processus est répété jusqu'à ce que les écarts entre les valeurs des nouveaux centres et centres calculés précédemment soit presque nuls. Ce sera dans notre cas, le critère d'arrêt utilisé.
+Nous désignons par << k-means standards >> la version de base de la méthode des k-means. C'est une méthode de classification non supervisée utilisée lorsque les données ne sont pas étiquetées. Elle est basée sur une approche itérative qui permet de former $k$ groupes disjoints en regroupant les observations présentant des similitudes. Pour quantifier cette similitude entre observations, on calcule la distance entre chaque observation et le centre de son groupe puis on fait la somme de toutes les distances ainsi calculées. L'objectif est alors de trouver un ensemble de $k$ centres qui minimise cette somme des distances.
 
 \subsubsection{Présentation de l'algorithme}
 
-Nous commençons par définir $d$ comme le nombre de variables et $k$ le nombre préétabli de centres voulus.
-L'algorithme des k-means est utilisé pour résoudre le problème suivant : étant donné un entier natural $k$ fixé et un ensemble de points $X \subset \R^d$ (avec $d \geq 1$), trouver un ensemble de centres $C = \{ c_i \in \R^d, i=1,2,...,k \}$ tel que 
+Soient $d \geq 1$ le nombre de variables mesurées sur nos observations, $X \subset \R^d $ l'ensemble de ces observations et $k$ le nombre de centres voulus.\\
+L'algorithme des k-means est utilisé pour résoudre le problème suivant : étant donné l' entier naturel $k$ fixé et l'ensemble de points $X \subset \R^d$ (avec $d \geq 1$), trouver un ensemble de centres $C = \{ c_i \in \R^d, i=1,2,...,k \}$ tel que 
 \begin{equation}\label{probleme_kmeans}
 	C = \argmin_{\{ A \subset \R^d, card(A)=k \}}\sum_{x \in X} \min_{c \in A} \Vert x-c \Vert^2
 \end{equation}
@@ -188,26 +179,44 @@ $$
 	\ell (x) = \argmin_{1 \leq i \leq k} \Vert x - c_i \Vert
 $$
 
-Résoudre l'équation (\ref{probleme_kmeans}) de manière exacte pour trouver $C$  est "NP-hard" ; cela implique qu'il est difficile de trouver une solution exacte avec un algorithme de complexité polynomiale. Ainsi, en pratique, l'on se contente d'approcher la solution de manière locale. L'algorithme de Lloyd est le plus utilisé pour cette fin. Il prend en entrée l'ensemble des données $X$, les centres initiaux $C$  et retourne les centres finaux résolvant localement l'équation (\ref{probleme_kmeans}). Concrètement, il s'implémente comme suit :  \\
+Résoudre l'équation (\ref{probleme_kmeans}) de manière exacte pour trouver $C$  est "NP-hard" ; cela implique qu'il est difficile de trouver une solution exacte avec un algorithme de complexité polynomiale. Ainsi, en pratique, l'on se contente d'approcher la solution de manière locale. L'algorithme de Lloyd est le plus utilisé pour cette fin. Il prend en entrée l'ensemble des données $X$, un ensemble de centres initiaux $C$  et retourne les centres finaux résolvant localement l'équation (\ref{probleme_kmeans}). Il a été proposé par Stuart Lloyd en 1957 à partir des idées de Hugo Steinhaus en 1956 et a été utilisé pour la première fois par James MacQueen en 1967. Cet algorithme fonctionne de façon itérative sur les deux tâches suivantes:
+\begin{description}
+  \item 1. Assigner chaque observation au centre le plus proche en calculant sa distance à tous les centres.
+  \item 2. Mettre à jour les centres en remplaçant chaque centre par la moyenne des observations qui lui sont assignées.
+
+\end{description}
+
+Le processus est répété jusqu'au moment où les centres ne changeront plus. Concrètement, cet algorithme s'implémente comme suit :  \\
 
 \noindent \textbf{\underline{Algorithme de Lloyd}}\label{algo_lloyd}
 
 \noindent \textbf{Entrées : } $X$ (le dataset) et $C$ (l'ensemble des $k$ centres initiaux)\\
 \noindent \textbf{Sorties : } $C$ (l'ensemble des centres définitifs) \\
 \textbf{1} \textbf{faire}\\
-\textbf{2} \indent associer chaque $x_i \in X$ au centre le plus proche $c(x_i) \in C$\\
-\textbf{3} \indent remplacer chaque $c_j \in C$ par le point moyen des $x \in X$ tels que $c(x)=c_j$\\
-\textbf{4} \textbf{jusqu'à ce que } $C$  ne change plus\\
-\textbf{4} \textbf{sortir} $C$\\
+\textbf{2} \indent assigner chaque $x_i \in X$ au centre le plus proche $c(x_i) \in C$ ($c(x_i) = c_{\ell(x_i)}$)\\
+\textbf{3} \indent remplacer chaque $c_j \in C$ par le point moyen des $x_i \in X$ tels que $c(x_i)=c_j$ ($\ell(x_i)=j$)\\
+\textbf{4} \textbf{Tant que } $C$ change\\
+\textbf{5} \textbf{sortir} $C$\\
 
-L'algorithme des k-means standards est alors obtenu en exécutant l'algorithme de Lloyd avec les centres initiaux qui sont choisis de manière uniformément aléatoire à partir des individus du dataset $X$.
+L'algorithme des k-means standards est alors obtenu en exécutant l'algorithme de Lloyd avec les centres initiaux qui sont choisis de manière uniformément aléatoire parmi les individus de notre base de données $X$.
+
+Pour finir, signalons que le choix du nombre de centres (ne faisant pas parti du problème des k-means) se fait en utilisant diverses techniques dont la méthode du coude qui sera présentée plus tard dans ce travail.
 \subsubsection{Convergence}
 
-Après avoir compris le fonctionnement de l'algorithme de Lloyd (et donc celui des k-means standards qui en découle), une question légitime se pose : l'algorithme s'arrête-t-il ?\\ Avant de répondre à cette question, introduisons d'abord quelques définitions et notations qui nous seront utiles dans la suite de ce travail.
+Après avoir compris le fonctionnement de l'algorithme de Lloyd (et donc celui des k-means standards qui en découle), une question légitime se pose : l'algorithme converge-t-il ? \\
+Avant de répondre à cette question, introduisons d'abord quelques définitions et notations qui nous seront utiles dans la suite de ce travail.
 
 	\begin{env_definition}\label{clustering}
-		\textbf{(Clustering)}\\
-		Un clustering $C$ est un ensemble de centres qui sont utilisés pour déterminer le label de chaque point du jeu de données $X$.
+		\textbf{(Clustering et cluster)}\\
+		Soit $ 1 \leq m \leq k$ un entier ($k$ désignant le nombre de centres recherchés dans le problème des k-means). \\
+		
+		\noindent Un clustering $C = \{ c_1, c_2, ..., c_m \}$ est un ensemble de $m$ centres qui sont utilisés pour déterminer le label de chaque point du jeu de données $X$. \\
+		
+		\noindent Pour tout $1 \leq i \leq m$, un cluster $X_i$ désigne alors l'ensemble des points ayant le label $i$, c'est-à-dire
+		$$
+			X_i = \left\{ x \in X, i = \ell(x) = \argmin_{1 \leq j \leq m} \Vert x - c_j \Vert \right\}
+		$$
+		Par la suite, par abus de langage, nous parlerons d'un cluster $X_i$ dans $C$ pour signifier que c'est un cluster défini à partir du clustering $C$. Cela ne signifie en aucun cas qu'un cluster est un centre.  
 	\end{env_definition}
 	
 	\begin{env_definition}\label{fonction_potentielle}
@@ -235,15 +244,15 @@ Après avoir compris le fonctionnement de l'algorithme de Lloyd (et donc celui d
 	
 	A la lumière de ces définitions, nous pouvons résumer le problème de k-means comme suit :
 	\begin{itemize}
-		\item Le problème de k-means tel que formulé par l'équation (\ref{probleme_kmeans}) à la page \pageref{probleme_kmeans} consiste à trouver le clustering qui minimise la fonction potentielle $\phi$
+		\item Le problème de k-means tel que formulé par l'équation (\ref{probleme_kmeans}) consiste à trouver le clustering qui minimise la fonction potentielle $\phi$
 		\item Théoriquement, on sait qu'il existe une solution exacte $C_{OPT}$ à ce problème mais en pratique il est difficile de la calculer.
-		\item L'algorithme des k-means fait donc appel à l'algorithme de Llyod (donné à la page \pageref{algo_lloyd}) pour trouver un minimum local de $\phi$ atteint en une solution approchée donnée par un clustering $C$. \\
+		\item L'algorithme des k-means fait donc appel à l'algorithme de Llyod pour trouver un minimum local de $\phi$ atteint en une solution approchée donnée par un clustering $C$. \\
 	\end{itemize}
 
 Nous pouvons maintenant énoncer le résultat qui nous permet d'affirmer que l'algorithme converge :
 
 	\begin{env_lemme}\label{lemme2.1}
-		Soient $S$ un ensemble de points, $c(S)$ son point moyen (son isobarycentre) et $z$ un point quelconque.\\
+		Soient $S$ un ensemble de points, $c(S)$ son isobarycentre et $z$ un point quelconque.\\
 		Alors, on a :
 		
 		$$
@@ -268,7 +277,7 @@ Nous pouvons maintenant énoncer le résultat qui nous permet d'affirmer que l'a
 
 Le lemme \ref{lemme2.1} nous permet d'affirmer que remplacer le centre de chaque cluster par le point moyen de ses éléments à chaque tour de boucle de l'algorithme de Llyod permet de décroître nécessairement $\phi$. Ainsi dès que $\phi$ atteint un minimum local, l'algorithme s'arrête.
 
-Nous pourrions être content de savoir que l'algorithme converge. Malheureusement rien ne garantit que la solution locale obtenue donne un bon clustering. En effet, $\phi$  peut être arbitrairement grand malgré l'optimum local atteint. C'est le défaut principal de l'algorithme des k-means standards. Dans la section suivante, nous présentons les k-means++ qui résolvent ce problème.
+Savoir que l'algorithme converge est une bonne chose. Malheureusement rien ne garantit que la solution locale obtenue est un bon clustering. En effet, $\phi$  peut être arbitrairement grand malgré l'optimum local atteint. Ainsi, même si l'algorithme des k-means est exécuté plusieurs fois sur un même jeu des données, il arrive qu'il donne de très mauvais résultats et les éléments ne sont donc pas bien classés. Il n'y a donc pas de garantie de précision. C'est le défaut principal de l'algorithme des k-means standards. Dans la section suivante, nous présentons les k-means++ qui résolvent ce problème.
 
 %===============================================================================
 
@@ -276,22 +285,22 @@ Nous pourrions être content de savoir que l'algorithme converge. Malheureusemen
 
 \subsubsection{Présentation de l'algorithme}
 
-L'initialisation de l'algorithme de k-means est un élément clef de la détermination d'un optimum local de bonne qualité. Dans cette section, nous cherchons à étudier une autre forme d'initialisation qui permettrait de résoudre le problème vu précédemment lors de l'application des k-means standard.
+L'initialisation de l'algorithme des k-means est un élément clef de la détermination d'un optimum local de bonne qualité. Dans cette section, nous cherchons à étudier une autre forme d'initialisation qui permettrait de résoudre le problème évoqué précédemment lors de l'application des k-means standards.
 
-L'algorithme des k-means++ est obtenu en changeant uniquement la manière dont sont initialisés les centres initiaux qui seront utilisés dans l'algorithme de Lloyd. Au lieu de les choisir uniformément, ces centres initiaux sont choisis avec une probabilité proportionnelle au poids $D^2$. Ensuite le reste se passe exactement comme pour les k-means standards en faisant appel à l'algorithme de Lloyd. 
+L'algorithme des k-means++ est obtenu en changeant uniquement la manière dont sont initialisés les centres qui seront utilisés dans l'algorithme de Lloyd. Au lieu de les choisir uniformément, ces centres initiaux sont choisis avec une probabilité proportionnelle au poids $D^2$. Ensuite le reste se passe exactement comme pour les k-means standards en faisant appel à l'algorithme de Lloyd. 
 
-Ainsi pour résumer le fonctionnement de l'algorithme de k-means++, nous faisons les étapes suivantes:
+Ainsi, le fonctionnement de l'algorithme des k-means++ se résume de la manière suivante :
 \begin{description}
-  \item 1. Nous cherchons en premier lieu à choisir aléatoirement (et de façon uniforme) une observation de notre dataset $X$. Ce sera le premier centre.
-  \item 2. Pour chaque individu du dataset, nous calculons la distance euclidienne minimale au carré entre l'individu et le centre défini. Cette distance, sera défini plus tard comme étant $$
-			\forall a \in A, D^2(a) = \min_{c \in C} \Vert a-c \Vert^2
+  \item 1. Nous choisissons aléatoirement et de façon uniforme une observation de notre dataset $X$. Nous l'ajoutons à $C$ comme premier centre.
+  \item 2. Pour chaque individu $x$ du dataset, nous calculons sa distance euclidienne au carré par rapport à chaque centre déjà trouvé et nous définissons son poids $D^2(x)$ comme étant le minimum des distances calculées ; mathématiquement ça donne :
+  		$$
+			\forall x \in X, D^2(x) = \min_{c \in C} \Vert x-c \Vert^2
 		$$
-  \item 3. Choisir un individu du dataset $X$ avec une probabilité proportionnelle à la distance calculé à l'étape 2. Cette probabilité qui correspond à $\dfrac{D^2(a_0)}{\displaystyle \sum_{a \in A} D^2(a)}$ sera démontré plus tard.
-
+  \item 3. Choisir un individu du dataset $X$ avec une probabilité proportionnelle à la distance calculée à l'étape 2. Pour un individu $x_0$, cette probabilité correspond à $\dfrac{D^2(x_0)}{\sum_{x \in X} D^2(x)}$. L'individu choisi est alors ajouté à l'ensemble $C$ de centres
   \end{description}
-L'étape 2 sera répété jusqu'à ce que les k centres auront été choisis. Une fois que ces centres soit initialisés, l'algorithme de Lloyd pourra être utilisé afin de déterminer les centres et clusters finaux.
+Les étapes 2 et 3 sont répétées jusqu'à ce que les $k$ centres initiaux aient été choisis. Une fois que ces centres sont obtenus, nous utilisons l'algorithme de Lloyd afin de déterminer les centres et clusters finaux.
   
-Voici le pseudo-code utilisé dans notre étude: \\
+Voici donc le pseudo-code correspondant à cet algorithme : \\
 
 \noindent \textbf{\underline{Algorithme d'initialisation des centres pour les k-means++}}\label{algo_kmeans_pp}
 
@@ -302,15 +311,22 @@ Voici le pseudo-code utilisé dans notre étude: \\
 \textbf{3} \textbf{Tant que } $card(C) \leq k$ \textbf{faire}\\
 \textbf{4} \indent choisir un $x \in X$ avec probabilité proportionnelle à $D^2(x)$\\
 \textbf{5} \indent actualiser $C = C \cup \{x \}$\\
-\textbf{6} \textbf{sortir} $C$ \\
+\textbf{6} \textbf{Fin Tant que} \\
+\textbf{7} \textbf{sortir} $C$ \\
 
-
+Cette nouvelle initialisation permet de résoudre le problème évoqué pour les k-means. Concrètement, elle permet d'avoir une idée de la précision de l'algorithme en fournissant une majoration de la valeur moyenne de la fonction potentielle. C'est à dire qu'en roulant plusieurs fois l'algorithme des k-means++, contrairement aux k-means standards, la moyenne de toutes les fonctions potentielles obtenues pour les différentes tentatives ne peut pas excéder une certaine valeur définie par rapport au clustering optimal ; ce qui implique une certaine garantie en termes de précision. Ce résultat est l'objet de la section suivante.
 
 \subsubsection{Critère de qualité}
 
-Dans cette section, nous présentons les résultats qui montrent que l'algorithme des k-means++ est meilleur que celui des k-means standards dans le sens où l'espérance de la fonction potentielle est majorée. Plus exactement, le théorème \ref{theoreme3.1} présenté à la fin de cette section montre que la fonction potentielle obtenue à fin de l'étape de l'initialisation de l'algorithme des k-means++ est un $O(\ln k)$ par rapport au clustering optimal théorique. Et cela est suffisant car dans l'algorithme de Lloyd, cette fonction ne peut faire que baisser.
+Dans cette section, nous présentons le résultat qui montre que l'algorithme des k-means++ est meilleur que celui des k-means standards dans le sens où l'espérance de la fonction potentielle est majorée. Plus exactement, le théorème \ref{theoreme3.1} présenté à la fin de cette section montre que la fonction potentielle obtenue à fin de l'étape de l'initialisation de l'algorithme des k-means++ est un $O(\ln k)$ par rapport au clustering optimal théorique. Et cela est suffisant car dans l'algorithme de Lloyd, cette fonction ne peut faire que baisser. Voici l'énoncé précis du théorème en question : \\
 
-Nous présentons trois lemmes qui permettent de démontrer le théorème en question : le premier permet de contrôler $\phi$ pour le choix du premier centre ; le deuxième montre que $\phi$ reste toujours majorée lorsque l'on choisit les centres restants dans les clusters optimaux théoriques proportionnellement au poids $D^2$. Enfin le troisième lemme généralise cela pour n'importe quel choix des centres, ce qui conduit à la démonstration du théorème.
+\textbf{Théorème \ref{theoreme3.1}} : Soient $C'$ un clustering obtenu lors de l'initialisation de l'algorithme des k-means++ et $\phi'$ sa fonction potentielle associée.
+		Alors on a :
+		$$
+			\E[\phi'] \leq 8 \cdot \left(\ln k + 2 \right) \cdot \phi_{OPT}
+		$$
+
+Nous présentons trois lemmes qui permettent de démontrer ce théorème : le premier permet de contrôler la fonction potentielle pour le choix du premier centre ; le deuxième montre que cette fonction reste toujours majorée lorsque l'on choisit les centres restants dans les clusters optimaux théoriques proportionnellement au poids $D^2$. Enfin le troisième lemme généralise cela pour n'importe quel choix des centres, ce qui conduit à la démonstration du théorème.
 
 	\begin{env_lemme}\label{lemme3.1}
 		Soient $A$ un cluster arbitraire dans $C_{OPT}$ et $c(A)$ son point moyen. Soit $C$ un clustering avec un unique centre choisi aléatoirement dans $A$ et de fonction potentielle $\phi$.\\
@@ -330,17 +346,15 @@ Nous présentons trois lemmes qui permettent de démontrer le théorème en ques
 		
 		En faisant varier le choix de $a_0$, nous voyons clairement que $\phi(A)$ est une variable aléatoire discrète à valeurs dans $\R$. En effet, $card\left(\phi(A)\left(\Omega\right)\right) = card(A)$ et pour chaque choix de $a_0$, la valeur prise par $\phi(A)$ est donnée par :
 		\begin{eqnarray*}
-			\phi_{a_0}(A) &=& \phi\left(A;C\right) \\
-			&=& \phi\left(A;\{a_0\}\right) \\
-			&=& \sum_{a \in A} \min_{c \in \{ a_0 \}} \Vert a - c \Vert^2 \\
+			\phi_{a_0}(A) &=& \sum_{a \in A} \min_{c \in \{ a_0 \}} \Vert a - c \Vert^2 \\
 			&=& \sum_{a \in A} \Vert a - a_0 \Vert^2
 		\end{eqnarray*}
 		
-		De plus, par le lemme \ref{lemme2.1} énoncé à la page \pageref{lemme2.1}, nous savons que le point moyen $c(A)$ du cluster $A$ est nécessairement le centre utilisé pour ce cluster dans le clustering optimal $C_{OPT}$ sinon $\phi_{OPT}$ ne serait pas minimale.
+		De plus, par le lemme \ref{lemme2.1}, nous savons que l'isobarycentre du cluster $A$, $c(A)$, est nécessairement le centre utilisé pour ce cluster dans le clustering optimal $C_{OPT}$ sinon $\phi_{OPT}$ ne serait pas minimale.
 		De tout ce qui précède, nous pouvons alors écrire :
 		\begin{eqnarray*}
 			\E\left[\phi(A)\right] &=& \sum_{a_0 \in A} \phi_{a_0}(A) \cdot \p \left( \phi(A)= \phi_{a_0}(A) \right) \\
-			&=& \sum_{a_0 \in A} \left( \sum_{a \in A} \Vert a-a_0 \Vert^2 \cdot \frac{1}{card(A)} \right) \\
+			&=& \sum_{a_0 \in A} \sum_{a \in A} \Vert a-a_0 \Vert^2 \cdot \frac{1}{card(A)} \\
 			&=& \frac{1}{card(A)} \cdot \sum_{a_0 \in A} \sum_{a \in A} \Vert a-a_0 \Vert^2
 		\end{eqnarray*}
 		En appliquant le lemme \ref{lemme2.1} avec $S=A$ et $z=a_0$, nous obtenons :
@@ -428,7 +442,7 @@ Nous présentons trois lemmes qui permettent de démontrer le théorème en ques
 		$$
 			\E\left[\phi(A)\right] \leq 4 \cdot \frac{1}{card(A)} \cdot \sum_{a_0 \in A} \sum_{a \in A} \Vert a_0 - a \Vert^2
 		$$
-		L'expression $\frac{1}{card(A)} \cdot \sum_{a_0 \in A} \sum_{a \in A} \Vert a_0 - a \Vert^2$ est celle que nous avons obtenue pour l'espérance lors de la démonstration du lemme \ref{lemme3.1} à la page \pageref{lemme3.1}. Ainsi, en appliquant le lemme \ref{lemme3.1}, nous obtenons donc
+		L'expression $\frac{1}{card(A)} \cdot \sum_{a_0 \in A} \sum_{a \in A} \Vert a_0 - a \Vert^2$ est celle que nous avons obtenue pour l'espérance lors de la démonstration du lemme \ref{lemme3.1}. Ainsi, en appliquant le lemme \ref{lemme3.1}, nous obtenons donc
 		$$
 			\E\left[\phi(A)\right] \leq 8 \cdot \phi_{OPT} \left( A \right)
 		$$
@@ -607,7 +621,7 @@ Nous présentons trois lemmes qui permettent de démontrer le théorème en ques
 	
 	\begin{proof}
 		~\\
-		Considérons le clustering $C$ avec un seul centre obtenu après avoir choisi le premier centre de manière uniforme lors de la première étape de l'algorithme des k-means++ et notons $\phi$ sa fonction potentielle associée. Soit $A$ le cluster de $C_{OPT}$ dans lequel ce premier centre a été choisi. Le clustering $C'$ de fonction potentielle $\phi'$ est obtenu alors en ajoutant à $C$ les $k-1$ centres restants. Ainsi, en appliquant le lemme \ref{lemme3.2} énoncé à la page \pageref{lemme3.2} $t=u=k-1$ et $X_c=A$ (donc $X_u=X-A$), nous obtenons :
+		Considérons le clustering $C$ avec un seul centre obtenu après avoir choisi le premier centre de manière uniforme lors de la première étape de l'algorithme des k-means++ et notons $\phi$ sa fonction potentielle associée. Soit $A$ le cluster de $C_{OPT}$ dans lequel ce premier centre a été choisi. Le clustering $C'$ de fonction potentielle $\phi'$ est obtenu alors en ajoutant à $C$ les $k-1$ centres restants. Ainsi, en appliquant le lemme \ref{lemme3.2} avec  $t=u=k-1$ et $X_c=A$ (donc $X_u=X-A$), nous obtenons :
 		$$
 			\E[\phi'] \leq \bigg( \phi \left( A \right) + 8 \cdot \phi_{OPT} \left( X-A \right) \bigg) \cdot \left( 1 + H_{k-1} \right) + \frac{(k-1)-(k-1)}{k-1} \cdot \phi \left( X-A \right)
 		$$
@@ -642,19 +656,11 @@ Nous présentons trois lemmes qui permettent de démontrer le théorème en ques
 
 \subsection{Les k-means++ semi-supervisés}
 
-Dans cette section, nous nous intéressons au cas semi supervisé où certaines observations sont déjà labellisées. Nous supposons, par exemple, que les données supervisées sont obtenues de la manière suivante :
-\begin{enumerate}
-	\item on choisit un cluster $i$ aléatoirement de manière uniforme
-	\item on tire $g_i$ observations du cluster $i$ de manière uniforme
-	\item on affecte à ces $g_i$ observations le label $i$
-\end{enumerate}
-Il est possible de répéter ces trois étapes plusieurs fois de façon à avoir plus de données supervisées et plus de clusters concernés par la supervision.
-
-Nous introduisons deux nouvelles notations : $X^{(u)}$ et $X^{(s)}$ désignant respectivement les données non labellisées et les données supervisées (labellisées). 
+Dans cette section, nous nous intéressons au cas semi supervisé où certaines observations sont déjà labellisées. Nous introduisons deux nouvelles notations : $X^{(u)}$ et $X^{(s)}$ désignant respectivement les données non labellisées et les données supervisées (labellisées). 
 	
 \subsubsection{Présentation de l'algorithme}
 
-Ici aussi, seule l'initialisation change pour tenir compte des données supervisées. Le reste de l'algorithme reste le même en recourant à l'algorithme de Lloyd. Voici l'algorithme d'initialisation pour ce cas : \\
+Ici aussi, seule l'initialisation change pour tenir compte des données supervisées. En effet, par rapport à l'initialisation de l'algorithme des k-means++, la première étape où l'on choisit le premier centre de manière uniforme est celle qui change. Elle est remplacée par le choix de $G$ premiers centres, où $G$ représente le nombre de labels distincts étiquetant les données supervisées ($G \leq k$). Ces $G$ centrés sont définis comme isobarycentres de points portants leurs labels respectifs. Les autres centres restants ($k-G$) sont choisis avec une probabilité proportionnelle au poids $D^2$ exactement comme dans l'algorithme d'initialisation des k-means++.   La suite de l'algorithme est la même en recourant à l'algorithme de Lloyd. Voici alors l'algorithme d'initialisation pour ce cas : \\
 
 \noindent \textbf{\underline{Algorithme d'initialisation des centres pour les k-means++}}\label{algo_ss_kmeans_pp}
 
@@ -666,14 +672,25 @@ Ici aussi, seule l'initialisation change pour tenir compte des données supervis
 \textbf{4} \indent \textbf{Si} $n_{\ell} > 0$ \textbf{alors}\\
 \textbf{5} \indent \indent poser $c_\ell$ égal au point moyen des données ayant $\ell$ pour label\\
 \textbf{6} \indent \indent actualiser $C = C \cup \{c_\ell \}$\\
-\textbf{7} \textbf{Tant que } $card(C) \leq k$ \textbf{faire}\\
-\textbf{8} \indent choisir un $X^{(u)}$ avec probabilité proportionnelle à $D^2(x)$\\
-\textbf{9} \indent actualiser $C = C \cup \{x \}$\\
-\textbf{10} \textbf{sortir} $C$ \\
+\textbf{7} \indent \textbf{Fin Si} \\
+\textbf{8} \textbf{Fin Pour}\\
+\textbf{9} \textbf{Tant que } $card(C) \leq k$ \textbf{faire}\\
+\textbf{10} \indent choisir un $x \in X^{(u)}$ avec probabilité proportionnelle à $D^2(x)$\\
+\textbf{11} \indent actualiser $C = C \cup \{x \}$\\
+\textbf{12} \textbf{Fin Tant que}\\
+\textbf{13} \textbf{sortir} $C$ \\
 
 \subsubsection{Critère de qualité}
 
-En suivant le même cheminement que pour les k-means++, nous démontrons que cette nouvelle manière d'initialiser les centres initiaux lorsqu'il existe des données supervisées permet d'améliorer la borne obtenue pour les k-means++. Ce résultat est énoncé dans le théorème \ref{theoreme4.7} qui vient à la page \pageref{theoreme4.7}. Les lemmes présentés dans cette section ont pour but de démontrer ledit théorème.
+En suivant le même cheminement que pour les k-means++, nous démontrons que cette nouvelle manière d'initialiser les centres initiaux lorsqu'il existe des données supervisées permet d'améliorer la borne obtenue pour les k-means++. Ce résultat est énoncé dans le théorème suivant :\\
+
+\noindent \textbf{Théorème \ref{theoreme4.7} : } Supposons que nous avons des données supervisées et posons $C = \emptyset$. Pour chaque label $\ell$ pour lequel il y a des observations supervisées, nous ajoutons à $C$ le point moyen $c_\ell$ de toutes ces observations. A la fin de ces ajouts, supposons que $card(C)=G$. Notons $n_{\ell_j}$ le nombre d'observations affectées du label $\ell_j$ et $n_j$ le cardinal du cluster associé au label $\ell_j$ dans $C_{OPT}$  pour $j = 1, 2, ..., G$. Il reste donc $u=k-G$ clusters non couverts par $C$ dans $C_{OPT}$. Ajoutons alors $t=u$ nouveaux centres à $C$ pour former $C'$ en utilisant le poids $D^2$ et en ne prenant pas aucune observation labellisée.\\
+		La fonction potentielle $\phi'$ associée au clustering $C'$ ainsi obtenu vérifie alors
+		$$
+			\E[\phi'] \leq 8 \cdot \left(2 + \ln (k - G) \right) \cdot \phi_{OPT}
+		$$  
+
+Les lemmes présentés dans cette section ont pour but de démontrer ledit théorème.
 
 	\begin{env_lemme}\label{lemme4.3}
 		Soient $d \geq 1$ un entier, $A = \{ x_i \in \R^d, i=1,2, ..., n \}$ un ensemble de points et $S \subset A$ un sous ensemble de $A$ de cardinal $g$ choisi aléatoirement de manière uniforme dans l'ensemble des parties de $A$ à $g$ éléments.\\
@@ -755,6 +772,7 @@ En suivant le même cheminement que pour les k-means++, nous démontrons que cet
 		ce qui donne le résultat attendu.
 	\end{proof}
 	
+	Nous allons maintenant démontrer le lemme \ref{lemme4.1}. Précisons une chose : en plus de toutes les hypothèses qui sont données dans ce lemme, il faut noter d'une part que $S$ est un ensemble des points labellisés et ayant le même label et d'autre part que la fonction $\phi$ dont il est question est la fonction potentielle associée au clustering avec un seul centre, l'isobarycentre $\overline{a}_S$ de $S$, obtenu lors de la première étape de l'algorithme d'initialisation des k-means++ semi supervisés. Ainsi pour le cluster $A$ contenant $S$,  $\phi(A)$ revient tout simplement à $\sum_{a \in A} \Vert a - \overline{a}_S \Vert^2$. C'est dans ce sens que nous noterons exceptionnellement   $\phi(A)$ par $\phi\left(A;\overline{a}_S \right)$ dans l'énoncé de ce lemme.
 	
 	\begin{env_lemme}\label{lemme4.1}
 		Soient $d \geq 1$ un entier, $A = \{ x_i \in \R^d, i=1,2, ..., n \}$ un cluster dans $C_{OPT}$ et $S \subset A$ un sous ensemble de $A$ de cardinal $g$ choisi aléatoirement de manière uniforme dans l'ensemble des parties de $A$ à $g$ éléments.\\
@@ -811,7 +829,7 @@ En suivant le même cheminement que pour les k-means++, nous démontrons que cet
 	\end{proof}	
 	
 	
-	Énonçons maintenant la version du lemme \ref{lemme3.3} pour le cas semi - supervisé et qui est utilisé dans la démonstration du théorème \ref{theoreme4.7} à la page \pageref{theoreme4.7} sur la majoration de l'espérance de la fonction potentielle lorsqu' il y a des données labellisées :
+	Énonçons maintenant la version du lemme \ref{lemme3.3} pour le cas semi - supervisé et qui est utilisé dans la démonstration du théorème \ref{theoreme4.7} sur la majoration de l'espérance de la fonction potentielle lorsqu' il y a des données labellisées :
 	
 	\begin{env_lemme}\label{lemme4.6}
 		Soient $C$ un clustering arbitraire  et $\phi$ sa fonction potentielle associée.
@@ -825,7 +843,7 @@ En suivant le même cheminement que pour les k-means++, nous démontrons que cet
 	\end{env_lemme}	
 	
 	\begin{proof}
-		Elle est similaire à celle du lemme \ref{lemme3.3} présentée à la page \pageref{lemme3.3}.\\
+		Elle est similaire à celle du lemme \ref{lemme3.3}.
 		Il suffit juste d'utiliser les probabilités tenant compte de nouvelles hypothèses ajoutées pour le cas semi-supervisé : étant donné un ensemble $A$, la probabilité de choisir un nouveau centre $a$ dans cet ensemble proportionnellement au poids $D^2$ tout en veillant à ne pas choisir $a$ parmi les données labellisées est alors donnée par :
 		$$
 			\frac{\phi \left( A \cap X^{(u)} \right)}{\phi \left(X^{(u)}\right)}
@@ -841,10 +859,10 @@ En suivant le même cheminement que pour les k-means++, nous démontrons que cet
 		Ainsi, en tenant compte de ces remarques et en suivant le cheminement de la démonstration présentée pour le lemme \ref{lemme3.3}, nous obtenons le résultat annoncé.
 	\end{proof}	
 	
-	Finalement, voici le résultat final de cette partie :
+	Finalement, voici le résultat principal de cette partie :
 	
 	\begin{theorem}\label{theoreme4.7}
-		Supposons que la supervision a a été faite suivant le procédé décrit au début de cette section. Posons $C = \emptyset$. Pour chaque label $\ell$ pour lequel il y a des observations supervisées, nous ajoutons à $C$ le point moyen $c_\ell$ de toutes ces observations. A la fin de ces ajouts, supposons que $card(C)=G$. Notons $n_{\ell_j}$ le nombre d'observations affectées du label $\ell_j$ et $n_j$ le cardinal du cluster associé au label $\ell_j$ dans $C_{OPT}$  pour $j = 1, 2, ..., G$. Il reste donc $u=k-G$ clusters non couverts par $C$ dans $C_{OPT}$. Ajoutons alors $t=u$ nouveaux centres à $C$ pour former $C'$ en utilisant le poids $D^2$ et en ne prenant pas aucune observation labellisée.\\
+		Supposons que nous avons des données supervisées et posons $C = \emptyset$. Pour chaque label $\ell$ pour lequel il y a des observations supervisées, nous ajoutons à $C$ le point moyen $c_\ell$ de toutes ces observations. A la fin de ces ajouts, supposons que $card(C)=G$. Notons $n_{\ell_j}$ le nombre d'observations affectées du label $\ell_j$ et $n_j$ le cardinal du cluster associé au label $\ell_j$ dans $C_{OPT}$  pour $j = 1, 2, ..., G$. Il reste donc $u=k-G$ clusters non couverts par $C$ dans $C_{OPT}$. Ajoutons alors $t=u$ nouveaux centres à $C$ pour former $C'$ en utilisant le poids $D^2$ et en ne prenant pas aucune observation labellisée.\\
 		La fonction potentielle $\phi'$ associée au clustering $C'$ ainsi obtenu vérifie alors
 		$$
 			\E[\phi'] \leq 8 \cdot \left(2 + \ln (k - G) \right) \cdot \phi_{OPT}
@@ -868,11 +886,11 @@ En suivant le même cheminement que pour les k-means++, nous démontrons que cet
 			&=& \phi_{OPT} - \sum_{j=1}^G \phi_{OPT} \left( X_{\ell_j} \right)
 		\end{eqnarray*}
 		
-		Compte tenu de ces constants, le résultat du lemme \ref{lemme4.6} s'écrit alors :
+		Compte tenu de ces constats, le résultat du lemme \ref{lemme4.6} s'écrit alors :
 		$$
 			\E[\phi'] \leq \left( \sum_{j=1}^G \bigg( \phi(X_{\ell_j}) - 8 \phi_{OPT}(X_{\ell_j}) \bigg) + 8 \phi_{OPT} \right) \cdot \left(1 + H_{k-G} \right)
 		$$
-		Et en passant à l'espérance dans le deuxième membre tout en gardant à l'esprit que tous les termes sont des constantes sauf $\phi(X_{\ell_j})$ et en appliquant le lemme \ref{lemme4.1} énoncé à la page \pageref{lemme4.1} avec $A=X_{\ell_j}$ ($S$ correspondant ici à l'ensemble des observations de $X_{\ell_j}$ qui sont labellisées avec $\overline{a}_S=c_{\ell_j}$) pour tout $X_{\ell_j}$, nous obtenons :
+		Et en passant à l'espérance dans le deuxième membre tout en gardant à l'esprit que tous les termes sont des constantes sauf $\phi(X_{\ell_j})$ et en appliquant le lemme \ref{lemme4.1} avec $A=X_{\ell_j}$ ($S$ correspondant ici à l'ensemble des observations de $X_{\ell_j}$ qui sont labellisées avec $\overline{a}_S=c_{\ell_j}$) pour tout $X_{\ell_j}$, nous obtenons :
 		\begin{eqnarray*}
 			\E[\phi'] & \leq & \left( \sum_{i=1}^G \left( \left( 1 + \frac{n_j -n_{\ell_j}}{n_{\ell_j}(n_j - 1)} \right) \phi_{OPT}(X_{\ell_j}) - 8 \phi_{OPT}(X_{\ell_j}) \right) + 8 \phi_{OPT} \right) \cdot \left(1 + H_{k-G} \right) \\
 			& \leq & \left( \sum_{i=1}^G \left( \left( -7 + \frac{n_j -n_{\ell_j}}{n_{\ell_j}(n_j - 1)} \right) \phi_{OPT}(X_{\ell_j}) \right) + 8 \phi_{OPT} \right) \cdot \left(1 + H_{k-G} \right) \\
@@ -890,7 +908,7 @@ En suivant le même cheminement que pour les k-means++, nous démontrons que cet
 		ce qui est le résultat escompté.
 	\end{proof}
 	
-	L'amélioration de la borne ne semble pas très importante comparée à la borne obtenue pour les k-means++. Cependant, plus il y a des données supervisées, plus cet algorithme sera plus performant que celui des k-means++.
+	L'amélioration de la borne ne semble pas très importante comparée à la borne obtenue pour les k-means++. Cependant, au vu de la fin de la preuve, plus il y a des données supervisées, plus cet algorithme sera plus performant que celui des k-means++.
 	
 %===============================================================================
 
@@ -1008,7 +1026,7 @@ Nous voyons qu'il existe une seule variable qualitative, la variable 'shops used
 
 \vspace{5 mm}
 \noindent
-Une Analyse en Composantes Principales (ACP) est implémentée afin de mieux regrouper et comprendre les variables quantitatives. Les 3 premières composantes principales expliquent moins de la moitié de l'inertie, soit 41.58\% de la variance expliquée.  Nous n'étudierons pas les résultats de l'ACP dans notre situation si ce n'est pour nous aider à mieux distinguer les clusters proposés par la méthode de kmeans++ semi supervisé, et mieux les associer aux variables du jeu de données.
+Une Analyse en Composantes Principales (ACP) est effectuée afin de mieux regrouper et comprendre les variables quantitatives. Les 3 premières composantes principales expliquent moins de la moitié de l'inertie, soit 41.58\% de la variance expliquée.  Nous n'étudierons pas les résultats de l'ACP dans notre situation si ce n'est pour nous aider à mieux distinguer les clusters proposés par la méthode de kmeans++ semi supervisé, et mieux les associer aux variables du jeu de données.
 
 \begin{center}
 \captionof{figure}{ACP en 3 dimensions}
@@ -1024,7 +1042,7 @@ Une Analyse en Composantes Principales (ACP) est implémentée afin de mieux reg
 \vspace{5 mm}
 
 \noindent
-La méthode kmeans est une méthode d'apprentissage non-supervisée. Lors de son application les données sont séparées en plusieurs classes dont le nombre est prédéfini de façon à regrouper les individus ayant le plus de similarité. C'est ainsi qu'une des tâches clefs est de trouver le nombre approprié de classes, $k$. Il existe plusieurs techniques pour déterminer le nombre de classes. Nous discuterons que des cas les plus connus : 
+La méthode kmeans est une méthode d'apprentissage non-supervisée. Lors de son application les données sont séparées en plusieurs classes dont le nombre est prédéfini de façon à regrouper les individus ayant le plus de similarité. C'est ainsi qu'une des tâches clefs est de trouver le nombre approprié de classes, $k$. Il existe plusieurs techniques pour déterminer le nombre de classes. Nous en évoquons quelques unes parmi les plus connus : 
 \vspace{5 mm}
 \begin{description}
   \item \textbf{1.} \textbf{Méthode du pouce:}
@@ -1040,23 +1058,23 @@ Il existe plusieurs indices de qualité, par exemple l’indice de Dunn, l’ind
 Le premier calcule la distance minimale inter-classes et ainsi plus cette distance est grande, meilleur sera la classification. Le nombre de clusters qui maximise l’indice de Dunn sera pris comme le nombre optimal de clusters k. Toutefois, nous notons que cette méthode a un coût qui augmente proportionnellement à l’augmentation du nombre de clusters et du nombre de dimensions. Ainsi elle ne sera pas utilisée dans notre étude.
 
 \vspace{5 mm}
-Introduit par Kauffman et Rousseew, l’indice de Silhouette nous donne une représentation visuelle de la distance entre un point d’une classe avec les points des classes voisines. Plus le coefficient ainsi calculé est proche de 1, plus la distance avec les classes voisines (inertie inter) est grande. Ceci s'observe notamment pour le nombre de classes optimal. À l'inverse, un coefficient proche de -1 nous indique une mauvaise classification de l’observation. Nous déterminons les valeurs de silhouette moyenne pour différent nombre de clusters. Le nombre optimal de clusters sera celui qui affichera la valeur moyenne la plus élevée. Cette valeur sera la plus proche de 1 ce qui suggéra que les observations seront les mieux classifiés.
+Introduit par Kauffman et Rousseew, l’indice de Silhouette nous donne une représentation visuelle de la distance entre un point d’une classe avec les points des classes voisines. Plus le coefficient ainsi calculé est proche de 1, plus la distance avec les classes voisines (inertie inter) est grande. Ceci s'observe notamment pour le nombre de classes optimal. À l'inverse, un coefficient proche de -1 nous indique une mauvaise classification de l’observation. Il faut déterminer les valeurs de silhouette moyenne pour différents nombres de clusters. Le nombre optimal de clusters sera celui qui affichera la valeur moyenne la plus élevée. Quand cette valeur sera la plus proche de 1, cela  suggérera que les observations sont mieux classifiées.
 
 \vspace{5 mm}
 		\item \textbf{3. Méthode du coude}:
 		
-  La méthode du coude est une technique visuelle très connue. L’idée derrière cette technique est d’utiliser la méthode k-means en parcourant k valeurs. À chacune des k valeurs, l'inertie intra-classe (c'est à dire, la distance moyenne entre les observations d'un cluster) est calculée et est affichée sur un graphique, nous permettant de mieux visualiser les résultats. L’objectif est de choisir la valeur k (qui sera le nombre de classes) créant un effet de ‘coude’, c’est-à-dire provoquant une baisse plus conséquente, plus soudaine l'inertie intra-classe. Nous disons ceci en gardant en tête que la somme des erreurs aura toujours tendance à baisser, plus la valeur de k est grande. 
+  La méthode du coude est une technique visuelle très connue. L’idée derrière cette technique est d’utiliser la méthode k-means en parcourant k valeurs. À chacune des k valeurs, l'inertie intra-classe (c'est à dire, la distance moyenne entre les observations d'un cluster) est calculée et est affichée sur un graphique, nous permettant de mieux visualiser les résultats. L’objectif est de choisir la valeur k (qui sera le nombre de classes) créant un effet de ‘coude’, c’est-à-dire provoquant une baisse plus conséquente, plus soudaine l'inertie intra-classe. Nous disons ceci en gardant en tête que la somme des distances intra-classes aura toujours tendance à baisser, plus la valeur de k est grande. 
 
 \vspace{5 mm}
  	 \item \textbf{4. La validation croisée}:
  	 
-La validation croisée regarde la stabilité des classes. Elle est une méthode d’estimation de fiabilité d’un modèle basé sur un système d'échantillonnage. Nous utilisons la validation croisée k-fold pour nous aider à déterminer le nombre optimal de clusters, k. Ce processus consiste en premier lieu à diviser l’échantillon en k sous-ensemble. Un de ces sous-ensemble est ensuite sélectionné comme ensemble de validation tandis que les k-1 autres sont utilisés comme ensemble d’apprentissage (dites données tests). L’opération se répète k fois pour chacun des k sous-ensemble, et à chaque fois les données sont modélisées grâce à une régression, et la performance du modèle est prise en note. Ainsi, cette procédure est effectuée en utilisant différents nombres de k. Le nombre optimal de k celui qui afficherait la plus petite erreur de validation croisée. \cite{WPO2017} mentionnent une approche différentes pour les données non-supervisées. Toutefois nous ne détaillerons pas plus car nos données, étant semi-supervisées, ne peuvent bénéficier de cette approche. 
+La validation croisée regarde la stabilité des classes. C'est une méthode d’estimation de fiabilité d’un modèle basé sur un système d'échantillonnage. La validation croisée k-fold est utilisée pour déterminer le nombre optimal de clusters, $k$. Ce processus consiste en premier lieu à diviser l’échantillon en $k$ sous-ensembles. Un de ces sous-ensembles est ensuite sélectionné comme ensemble de validation tandis que les k-1 autres sont utilisés comme ensemble d'apprentissage (dit données test). L’opération se répète k fois pour chacun des k sous-ensemble, et à chaque fois les données sont modélisées grâce à une régression, et la performance du modèle est prise en note. Ainsi, cette procédure est effectuée en utilisant différentes valeurs de $k$. La valeur optimale de $k$ celle qui afficherait la plus petite erreur de validation croisée. Dans \cite{WPO2017}, une approche différente est mentionnée pour les données non-supervisées. Toutefois nous ne la présentons pas car nous n'allons pas l'utiliser dans cette étude (focalisée plus sur les résultats du semi-supervisé). 
  	 
 \end{description}
 
 \vspace{10 mm}
 \noindent
-Dans le cadre de notre étude, nous choisissons de travailler avec la méthode du coude, une méthode que nous appliquons sur la méthode de kmeans++ semi-supervisé avec 60\% de données labellisées. Cette méthode est d'ailleurs comparée avec celle de scikit-learn (ou encore sklearn) afin de déterminer l'exactitude de l'algorithme utilisé. Scikit-learn est une bibliothèque python souvent utilisée afin d’appliquer des méthodes de machines learning sur python. Elle contient des fonctions déjà créées, tel que les fonctions de kmeans et de kmeans++. Elle contient également des fonctions nous aidant à déterminer le nombre de clusters optimal. Ainsi nous l’utilisons à quelques reprises lors de cet étude afin de comparer nos résultats et afin de nous aider à faire la pseudo-labellisation utilisé par la suite par la méthode de kmeans++ semi-supervisés. Figure 3 affiche la répartition des sommes des erreurs au carré à la fois pour notre méthode, dite la méthode manuelle, ainsi que la méthode proposée par sklearn. Nous voyons une baisse plus soudaine lorsque nous avons 5 clusters. Ce sera ainsi le choix du nombre de clusters utilisé lors de l'application des algorithmes de clustering.
+Dans le cadre de notre étude, nous choisissons de travailler avec la méthode du coude, une méthode que nous appliquons sur la méthode de kmeans++ semi-supervisé avec 60\% de données labellisées. Cette méthode est d'ailleurs comparée avec celle de scikit-learn (ou encore sklearn) afin de déterminer l'exactitude de l'algorithme utilisé. Scikit-learn est une bibliothèque python souvent utilisée afin d’appliquer des méthodes de machine learning sur python. Elle contient des fonctions déjà créées, telles que les fonctions de kmeans et de kmeans++. Elle contient également des fonctions nous aidant à déterminer le nombre de clusters optimal. Ainsi nous l’utilisons à quelques reprises lors de cette étude afin de comparer nos résultats et afin de nous aider à faire la pseudo-labellisation utilisée par la suite par la méthode des kmeans++ semi-supervisés. Figure 3 affiche la répartition des sommes des erreurs au carré à la fois pour notre méthode, dite la méthode manuelle, ainsi que la méthode proposée par sklearn. Nous voyons une baisse plus soudaine lorsque nous avons 5 clusters. Ce sera ainsi le choix du nombre de clusters utilisé lors de l'application des algorithmes de clustering.
 
 \begin{center}
 \captionof{figure}{Méthode du coude, comparaison sklearn et méthode manuelle}
@@ -1281,13 +1299,19 @@ Le magasin 1 attire les individus du cluster 3, tandis que le magasin 2 attire p
 \vspace{10 mm}
 
 \noindent
-L'objectif de notre étude vise en premier lieu à évaluer la performance des kmeans++ semi-supervisées par rapport aux kmeans standard, et aux kmeans++. Pour le faire, nous tentons de démontrer les différentes algorithmes dans une partie théorique, avant de les appliquer sur un jeu de données. Finalement les performances sont comparées à l'aide de mesures comme les temps d'exécution ainsi que le coût de la fonction. Nous avons vu que le coût, soit l'inertie intra moyenne pour 100 simulations, reste une mesure moins fiable dans notre situation, principalement parce que notre jeu de données ne contient pas de vrai labels. Ainsi, en nous basant sur le temps d'exécution, nous voyons clairement que les kmeans++ semi-supervisées restent la méthode la plus efficace en temps, en étant presque 3 fois plus rapide que les deux autres méthodes de classification non-supervisées vu dans cet étude.
+Notre étude visait en premier lieu à évaluer la performance des k-means++ semi-supervisées par rapport aux k-means standards, et aux k-means++. Pour ce faire, nous avons fait une étude théorique de ces différents algorithmes avant de les appliquer sur un jeu de données clients.\\
 
-Finalement, nous appliquons la méthode semi-supervisée afin d'analyser la segmentation des clients. Les données contiennent des variables et observations préétablies, ce qui fait qu'aucune amélioration peut être fait au niveau des données elles-même. En décidant de labelliser à 60\% les données et en choisissant d'analyser 5 clusters, comme déterminé par la méthode du coude, nous trouvons quelques informations pertinentes. Toutefois, ces informations restent limités, compte tenu le type de données.
+\noindent
+Dans la partie théorique, nous avons vu que l'algorithme des k-means standards n'offre aucune garantie sur la qualité du clustering qu'il fournit. Ensuite, avons montré qu'en changeant la manière d'initialiser les centres dans les k-means++, nous obtenons un critère de qualité qui permet d'avoir une idée de la précision de cet algorithme en fonction du clustering optimal. Plus précisement, ce critère montre que le coût d'exécution de l'algorithme mesuré par la fonction potentielle, fonction obtenue comme somme des carrés de distances intra clusters, est un $O(\ln k)$ par rapport au clustering optimal.  Nous avons finalement vu qu'introduire des données supervisées dans le processus d'apprentissage pour contrôler l'initialisation des centres permettait d'améliorer davantage ce critère et d'obtenir un coût qui est un $O(\ln(k-G))$, où $G$ désigne le nombre de clusters concernés par la supervision.\\
 
-Nous observons principalement que la segmentation des clients peut être faite en se basant sur les magasins. Par exemple, la boutique 1 vend plus aux clients du cluster 3, la boutique 5 vend plus au clients du cluster 4, ou encore la boutique 2 attire principalement le cluster 2. De plus à l'aide de diagrammes supplémentaires, nous voyons que certains magasins vendent des produits plus cher, comme les magasins 1 et 2, suggérant que ceux qui y achètent, soient les clusters 3 et 2 seraient plus aisés. De plus nous remarquons que le cluster 0 est très petit, il représente ceux qui vive le plus proche des magasins mais qui achète le moins de produits.
+\noindent
+Dans la partie appliquée, les performances de ces trois algorithmes ont été comparées à l'aide des mesures comme le temps d'exécution ainsi que le coût estimé par la fonction potentielle. Nous avons vu que le coût, soit l'inertie intra classes moyenne, était généralement meilleur pour les kmeans++ semi supervisés comme attendu. Mais il est arrivé qu'il soit légèrement supérieur en augmentant le pourcentage de supervision alors que nous nous attendions à ce qu'il puisse baisser. Cela serait peut-être dû au fait que notre jeu de données ne contient pas de vrais labels. Mais en nous basant sur le temps d'exécution, nous avons vu clairement que les kmeans++ semi-supervisés restent la méthode la plus efficace en temps, en étant presque 3 fois plus rapide que les deux autres méthodes de classification non-supervisée abordées dans cette étude.\\
 
-Nous rencontrons toutefois certaines limites auprès des kmeans++ semi-supervisés. Cette méthode ne nous permets pas de bien identifier tous les clusters (notamment les clusters 2 et 4 dont les centres sont très proche) et elle reste limitée sur les variables qui peuvent être analysées. Dans un cas pratique en entreprise par exemple, une étude plus approfondie  peut être menée au sein de chaque magasin en ciblant les individus de clusters identifiés ci-dessus qui y viennent afin de cerner davantage leurs attentes.
+\noindent
+Enfin, nous avons utilisé la méthode semi-supervisée pour effecteur une segmentation des clients. L'état des données ne permettant pas de faire une analyse approfondie (données anonymisées notamment), nous avons obtenu des conclusions limitées. En décidant de labelliser les données à 60\% et en choisissant d'analyser 5 clusters, comme déterminé par la méthode du coude, nous avons quand même trouvé quelques informations, certes limitées, mais pertinentes. Nous avons principalement noté que la segmentation des clients peut être faite en se basant sur les magasins. Par exemple, la boutique 1 vend plus aux clients du cluster 3, la boutique 5 vend plus aux clients du cluster 4, ou encore la boutique 2 attire principalement le cluster 2. De plus à l'aide de diagrammes supplémentaires, nous avons constaté que certains magasins vendent des produits plus chers, comme les magasins 1 et 2, suggérant que ceux qui y achètent, les individus de clusters 3 et 2 principalement, seraient plus aisés. De plus, nous avons remarqué que le cluster 0 est de petite taille et regroupe les individus qui vivent plus près des magasins mais qui achètent le moins de produits.\\
+
+\noindent
+Pour finir, nous signalons que même avec des kmeans++ semi-supervisés, nous n'étions pas capables de caractériser davantage les clusters obtenus pour notre jeu de données. Dans un cas pratique en entreprise par exemple, une étude plus approfondie  peut être menée au sein de chaque magasin en ciblant les individus des clusters identifiés dans cette étude qui y viennent afin de cerner davantage leurs attentes.
 
 
 %###########################################################################################################################################

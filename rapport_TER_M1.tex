@@ -159,8 +159,20 @@ Cette partie est consacrée à la présentation et à l'étude théorique de dif
 
 \subsection{Les k-means standards}
 
+Les k-means standards est une méthode de classification non-supervisée utilisé lorsque les données ne sont pas étiquettées. Le but de cet algorithme est basée sur une approche itérative permettant de regrouper les observations à partir de leur similitudes. Proposée par Stuart Lloyd en 1957 à partir des idées de Hugo Steinhaus en 1956, cette méthode a été utilisée pour la première fois par James MacQueen en 1967.
+
+Le fonctionnement des k-means standards repose sur un choix aléatoire d'un nombre de centres, déterminés au préalable en utilisant divers techniques comme la méthode du coude, une méthode qui vu plus tard dans l'étude. À partir de là, l'algorithme va fonctionner de façon itérative sur les deux tâches suivantes:
+\begin{description}
+  \item 1. Assigner chaque observation au centre le plus proche, basé sur la mesure de distance Euclidéenne.
+  \item 2. Pour chaque centre, calculer la moyenne des distances de chaque observation appartenant à ce centre. Cette moyenne sera la nouvelle valeur du centre.
+
+\end{description}
+
+Une fois l'étape 2 accomplie, chaque centre a une nouvelle valeur qui correspond à la moyenne des observations correspondantes. Le processus est répété jusqu'à ce que les écarts entre les valeurs des nouveaux centres et centres calculés précédemment soit presque nuls. Ce sera dans notre cas, le critère d'arrêt utilisé.
+
 \subsubsection{Présentation de l'algorithme}
 
+Nous commençons par définir $d$ comme le nombre de variables et $k$ le nombre préétabli de centres voulus.
 L'algorithme des k-means est utilisé pour résoudre le problème suivant : étant donné un entier natural $k$ fixé et un ensemble de points $X \subset \R^d$ (avec $d \geq 1$), trouver un ensemble de centres $C = \{ c_i \in \R^d, i=1,2,...,k \}$ tel que 
 \begin{equation}\label{probleme_kmeans}
 	C = \argmin_{\{ A \subset \R^d, card(A)=k \}}\sum_{x \in X} \min_{c \in A} \Vert x-c \Vert^2
@@ -170,7 +182,7 @@ $$
 	\ell (x) = \argmin_{1 \leq i \leq k} \Vert x - c_i \Vert
 $$
 
-Résoudre l'équation (\ref{probleme_kmeans}) de manière exacte pour trouver $C$  est "NP-hard" ; c'est-à-dire qu'il est difficile de trouver une solution exacte avec un algorithme de complexité polynomiale. Ainsi, en pratique, l'on se contente d'approcher la solution de manière locale. L'algorithme de Lloyd est le plus utilisé pour cette fin. Il prend en entrée l'ensemble des données $X$, les centres initiaux $C$  et retourne les centres finaux résolvant localement l'équation (\ref{probleme_kmeans}). Concrètement, on l'implémente comme suit :  \\
+Résoudre l'équation (\ref{probleme_kmeans}) de manière exacte pour trouver $C$  est "NP-hard" ; cela implique qu'il est difficile de trouver une solution exacte avec un algorithme de complexité polynomiale. Ainsi, en pratique, l'on se contente d'approcher la solution de manière locale. L'algorithme de Lloyd est le plus utilisé pour cette fin. Il prend en entrée l'ensemble des données $X$, les centres initiaux $C$  et retourne les centres finaux résolvant localement l'équation (\ref{probleme_kmeans}). Concrètement, il s'implémente comme suit :  \\
 
 \noindent \textbf{\underline{Algorithme de Lloyd}}\label{algo_lloyd}
 
@@ -179,10 +191,10 @@ Résoudre l'équation (\ref{probleme_kmeans}) de manière exacte pour trouver $C
 \textbf{1} \textbf{faire}\\
 \textbf{2} \indent associer chaque $x_i \in X$ au centre le plus proche $c(x_i) \in C$\\
 \textbf{3} \indent remplacer chaque $c_j \in C$ par le point moyen des $x \in X$ tels que $c(x)=c_j$\\
-\textbf{4} \textbf{jusqu'à ce que } $C$ ne change plus\\
-\textbf{5} \textbf{sortir} $C$ \\
+\textbf{4} \textbf{jusqu'à ce que } $C$  ne change plus\\
+\textbf{4} \textbf{sortir} $C$\\
 
-L'algorithme des k-means standards est alors obtenu en exécutant l'algorithme de Lloyd avec les centres initiaux qui sont choisis uniformément dans $X$
+L'algorithme des k-means standards est alors obtenu en exécutant l'algorithme de Lloyd avec les centres initiaux qui sont choisis de manière uniformément aléatoire à partir des individus du dataset $X$.
 \subsubsection{Convergence}
 
 Après avoir compris le fonctionnement de l'algorithme de Lloyd (et donc celui des k-means standards qui en découle), une question légitime se pose : l'algorithme s'arrête-t-il ?\\ Avant de répondre à cette question, introduisons d'abord quelques définitions et notations qui nous seront utiles dans la suite de ce travail.
@@ -198,12 +210,12 @@ Après avoir compris le fonctionnement de l'algorithme de Lloyd (et donc celui d
 		$$
 			\forall A \subset X \,, \quad \phi(A) = \sum_{a \in A} \min_{c \in C} \Vert a - c \Vert^2
 		$$
-		Par la suite, par abus de notation, l'on écrira tout simplement $\phi(X) = \phi$ et uniquement pour $X$.
+		Par la suite, par abus de notation, nous écrirons tout simplement $\phi(X) = \phi$ et uniquement pour $X$.
 	\end{env_definition}
 	
 	\begin{env_definition}\label{clustering_optimal}
 		\textbf{(Clustering optimal et cluster optimal)}\\
-		Soit $C_{OPT}$ le clustering qui serait la solution exacte du problème des k-means tel que formulé par l'équation (\ref{probleme_kmeans}) à la page \pageref{probleme_kmeans}. $C_{OPT}$ sera alors appelé clustering optimal et tout cluster dans $C_{OPT}$ sera appelé cluster optimal.
+		Soit $C_{OPT}$ le clustering qui serait la solution exacte du problème des k-means tel que formulé par l'équation (\ref{probleme_kmeans}). $C_{OPT}$ sera alors appelé clustering optimal et tout cluster dans $C_{OPT}$ sera appelé cluster optimal.
 	\end{env_definition}
 	
 	\begin{env_definition}\label{poids_d}
@@ -222,10 +234,10 @@ Après avoir compris le fonctionnement de l'algorithme de Lloyd (et donc celui d
 		\item L'algorithme des k-means fait donc appel à l'algorithme de Llyod (donné à la page \pageref{algo_lloyd}) pour trouver un minimum local de $\phi$ atteint en une solution approchée donnée par un clustering $C$. \\
 	\end{itemize}
 
-Nous pouvons maintenant énoncer le résultat qui nous permet d'affirmer que l'algorithme s'arrête :
+Nous pouvons maintenant énoncer le résultat qui nous permet d'affirmer que l'algorithme converge :
 
 	\begin{env_lemme}\label{lemme2.1}
-		Soient $S$ un ensemble de points, $c(S)$ son point moyen (son centre de gravité, son isobarycentre) et $z$ un point quelconque.\\
+		Soient $S$ un ensemble de points, $c(S)$ son point moyen (son isobarycentre) et $z$ un point quelconque.\\
 		Alors, on a :
 		
 		$$
@@ -250,7 +262,7 @@ Nous pouvons maintenant énoncer le résultat qui nous permet d'affirmer que l'a
 
 Le lemme \ref{lemme2.1} nous permet d'affirmer que remplacer le centre de chaque cluster par le point moyen de ses éléments à chaque tour de boucle de l'algorithme de Llyod permet de décroître nécessairement $\phi$. Ainsi dès que $\phi$ atteint un minimum local, l'algorithme s'arrête.
 
-Nous pourrions être content de savoir que l'algorithme s'arrête toujours. Malheureusement rien ne garantit que la solution locale obtenue donne un bon clustering. En effet, $\phi$  peut être arbitrairement grand malgré l'optimum local atteint. C'est le défaut principal de l'algorithme des k-means standards. Dans la section suivante, nous présentons les k-means++ qui résolvent ce problème.
+Nous pourrions être content de savoir que l'algorithme converge. Malheureusement rien ne garantit que la solution locale obtenue donne un bon clustering. En effet, $\phi$  peut être arbitrairement grand malgré l'optimum local atteint. C'est le défaut principal de l'algorithme des k-means standards. Dans la section suivante, nous présentons les k-means++ qui résolvent ce problème.
 
 %===============================================================================
 
@@ -258,7 +270,22 @@ Nous pourrions être content de savoir que l'algorithme s'arrête toujours. Malh
 
 \subsubsection{Présentation de l'algorithme}
 
-L'algorithme des k-means++ est obtenu en changeant uniquement la manière dont sont initialisés les centres initiaux qui seront utilisés dans l'algorithme de Lloyd. Au lieu de les choisir uniformément, ces centres initiaux sont choisis avec une probabilité proportionnelle au poids $D^2$. Ensuite le reste se passe exactement comme pour les k-means standards en faisant appel à l'algorithme de Lloyd. Voici l'algorithme d'initialisation en question : \\
+L'initialisation de l'algorithme de k-means est un élément clef de la détermination d'un optimum local de bonne qualité. Dans cette section, nous cherchons à étudier une autre forme d'initialisation qui permettrait de résoudre le problème vu précédemment lors de l'application des k-means standard.
+
+L'algorithme des k-means++ est obtenu en changeant uniquement la manière dont sont initialisés les centres initiaux qui seront utilisés dans l'algorithme de Lloyd. Au lieu de les choisir uniformément, ces centres initiaux sont choisis avec une probabilité proportionnelle au poids $D^2$. Ensuite le reste se passe exactement comme pour les k-means standards en faisant appel à l'algorithme de Lloyd. 
+
+Ainsi pour résumer le fonctionnement de l'algorithme de k-means++, nous faisons les étapes suivantes:
+\begin{description}
+  \item 1. Nous cherchons en premier lieu à choisir aléatoirement (et de façon uniforme) une observation de notre dataset $X$. Ce sera le premier centre.
+  \item 2. Pour chaque individu du dataset, nous calculons la distance euclidienne minimale au carré entre l'individu et le centre défini. Cette distance, sera défini plus tard comme étant $$
+			\forall a \in A, D^2(a) = \min_{c \in C} \Vert a-c \Vert^2
+		$$
+  \item 3. Choisir un individu du dataset $X$ avec une probabilité proportionnelle à la distance calculé à l'étape 2. Cette probabilité qui correspond à $\dfrac{D^2(a_0)}{\displaystyle \sum_{a \in A} D^2(a)}$ sera démontré plus tard.
+
+  \end{description}
+L'étape 2 sera répété jusqu'à ce que les k centres auront été choisis. Une fois que ces centres soit initialisés, l'algorithme de Lloyd pourra être utilisé afin de déterminer les centres et clusters finaux.
+  
+Voici le pseudo-code utilisé dans notre étude: \\
 
 \noindent \textbf{\underline{Algorithme d'initialisation des centres pour les k-means++}}\label{algo_kmeans_pp}
 
@@ -270,6 +297,8 @@ L'algorithme des k-means++ est obtenu en changeant uniquement la manière dont s
 \textbf{4} \indent choisir un $x \in X$ avec probabilité proportionnelle à $D^2(x)$\\
 \textbf{5} \indent actualiser $C = C \cup \{x \}$\\
 \textbf{6} \textbf{sortir} $C$ \\
+
+
 
 \subsubsection{Critère de qualité}
 

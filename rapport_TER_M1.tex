@@ -1200,7 +1200,7 @@ Nous utilisons des diagrammes en barre (voir ci-dessous) afin de nous aider à m
 
 \noindent
 \begin{center}
-\captionof{figure}{Diagrammes en barre affichant le prix moyen, nombre de produits vendus et nombre clients allant dans chaque magasin }
+\captionof{figure}{Diagrammes de barre affichant le prix moyen, nombre de produits vendus et nombre clients allant dans chaque magasin }
 \includegraphics[scale=0.30] {clients_shops.png}
 \includegraphics[scale=0.30] {price_shops.png}
 \includegraphics[scale=0.30] {amountpurchased_shops.png}
@@ -1233,8 +1233,27 @@ Le magasin 1 attire les individus du cluster 3, tandis que le magasin 2 attire p
 \includegraphics[scale=0.20] {cluster_shop5.png}
 \end{center}
 
+\vspace{10 mm}
+
+\section{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+\vspace{10 mm}
+
 \noindent
-Ainsi dans cette étude, la segmentation des clients peut être faite en se basant sur les magasins. Avec les données à notre disposition, nous ne pouvons pas pousser l'analyse plus loin. Dans un cas pratique en entreprise par exemple, une étude plus approfondie  peut être menée au sein de chaque magasin en ciblant les individus de clusters identifiés ci-dessus qui y viennent afin de cerner davantage leurs attentes.
+L'objectif de notre étude vise en premier lieu à évaluer la performance des kmeans++ semi-supervisées par rapport aux kmeans standard, et aux kmeans++. Pour le faire, nous tentons de démontrer les différentes algorithmes dans une partie théorique, avant de les appliquer sur un jeu de données. Finalement les performances sont comparées à l'aide de mesures comme les temps d'exécution ainsi que le coût de la fonction. Nous avons vu que le coût, soit l'inertie intra moyenne pour 100 simulations, reste une mesure moins fiable dans notre situation, principalement parce que notre jeu de données ne contient pas de vrai labels. Ainsi, en nous basant sur le temps d'exécution, nous voyons clairement que les kmeans++ semi-supervisées restent la méthode la plus efficace en temps, en étant presque 3 fois plus rapide que les deux autres méthodes de classification non-supervisées vu dans cet étude.
+
+Finalement, nous appliquons la méthode semi-supervisée afin d'analyser la segmentation des clients. Les données contiennent des variables et observations préétablies, ce qui fait qu'aucune amélioration peut être fait au niveau des données elles-même. En décidant de labelliser à 60\% les données et en choisissant d'analyser 5 clusters, comme déterminé par la méthode du coude, nous trouvons quelques informations pertinentes. Toutefois, ces informations restent limités, compte tenu le type de données.
+
+Nous observons principalement que la segmentation des clients peut être faite en se basant sur les magasins. Par exemple, la boutique 1 vend plus aux clients du cluster 3, la boutique 5 vend plus au clients du cluster 4, ou encore la boutique 2 attire principalement le cluster 2. De plus à l'aide de diagrammes supplémentaires, nous voyons que certains magasins vendent des produits plus cher, comme les magasins 1 et 2, suggérant que ceux qui y achètent, soient les clusters 3 et 2 seraient plus aisés. De plus nous remarquons que le cluster 0 est très petit, il représente ceux qui vive le plus proche des magasins mais qui achète le moins de produits.
+
+Nous rencontrons toutefois certaines limites auprès des kmeans++ semi-supervisés. Cette méthode ne nous permets pas de bien identifier tous les clusters (notamment les clusters 2 et 4 dont les centres sont très proche) et elle reste limitée sur les variables qui peuvent être analysées. Dans un cas pratique en entreprise par exemple, une étude plus approfondie  peut être menée au sein de chaque magasin en ciblant les individus de clusters identifiés ci-dessus qui y viennent afin de cerner davantage leurs attentes.
+
+
+
+
+
+
 
 \vspace{10 mm}
 
